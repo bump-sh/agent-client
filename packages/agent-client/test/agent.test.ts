@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest"
 import { Agent } from "../src/agent.js"
-import type { AgentEvent } from "../src/types.js"
+import type { AgentEvent, Message } from "../src/types.js"
 
 /** A fake `fetch` that streams the given NDJSON lines back as the response body. */
 function fetchReturning(lines: string[]): typeof fetch {
@@ -26,6 +26,24 @@ describe("Agent", () => {
       { role: "user", content: "hi" },
       { role: "assistant", content: "Hello world" },
     ])
+  })
+
+  it("records the user turn synchronously, before the stream is consumed", () => {
+    const agent = new Agent({ endpoint: "/chat", fetch: fetchReturning([]) })
+
+    agent.send("hi") // not awaited / not iterated
+
+    expect(agent.messages).toEqual([{ role: "user", content: "hi" }])
+  })
+
+  it("exposes messages as a copy, not the internal array", () => {
+    const agent = new Agent({ endpoint: "/chat", fetch: fetchReturning([]) })
+    agent.send("hi")
+
+    const snapshot = agent.messages as Message[]
+    snapshot.push({ role: "user", content: "tampered" })
+
+    expect(agent.messages).toEqual([{ role: "user", content: "hi" }])
   })
 
   it("replays history on the next turn", async () => {

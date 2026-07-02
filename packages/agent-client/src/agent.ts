@@ -10,9 +10,12 @@ type Listeners = {
 }
 
 /**
- * The return value of {@link Agent.send}. Consume it either way:
+ * The return value of {@link Agent.send}. Consume it ONCE, either way:
  * - `await result` resolves to the assembled assistant reply (rejects on error).
  * - `for await (const event of result)` yields each streamed event.
+ *
+ * It wraps a single underlying stream, so awaiting *and* iterating (or iterating
+ * twice) drains it once — the second consumer sees an empty stream.
  */
 export class StreamResult implements AsyncIterable<AgentEvent>, PromiseLike<string> {
   #events: AsyncGenerator<AgentEvent>
@@ -71,7 +74,7 @@ export class Agent {
 
   /** The conversation history so far (user and assistant turns). */
   get messages(): readonly Message[] {
-    return this.#messages
+    return [...this.#messages]
   }
 
   /** Clear the conversation history. */
@@ -87,11 +90,13 @@ export class Agent {
 
   /** Send a user turn and stream the assistant reply. */
   send(content: string, options: SendOptions = {}): StreamResult {
-    return new StreamResult(this.#run(content, options))
+    // Record the user turn synchronously so `messages` is correct even before
+    // the (lazy) stream is consumed. The request still fires on consumption.
+    this.#messages.push({ role: "user", content })
+    return new StreamResult(this.#run(options))
   }
 
-  async *#run(content: string, options: SendOptions): AsyncGenerator<AgentEvent> {
-    this.#messages.push({ role: "user", content })
+  async *#run(options: SendOptions): AsyncGenerator<AgentEvent> {
     let assistant = ""
     try {
       const response = await this.#request(options.signal)
