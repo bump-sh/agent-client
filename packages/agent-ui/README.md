@@ -53,6 +53,26 @@ chat.open(); chat.close(); chat.toggle(); chat.destroy()
 chat.agent // the underlying Agent
 ```
 
+### Markdown rendering
+
+The built-in renderer is intentionally tiny and dependency-free: it escapes all
+HTML first, then re-introduces a fixed, safe subset (bold, code, lists, tables,
+and links restricted to `http(s)`/`mailto`/relative schemes). It keeps the bundle
+small — no `javascript:`/`data:` links, no raw HTML passthrough.
+
+Need full CommonMark/GFM? Swap in a specialized renderer via `renderMarkdown`.
+Always pair the parser with a sanitizer — do not trust model output:
+
+```ts
+import { marked } from "marked"
+import DOMPurify from "dompurify"
+
+new Chat({
+  endpoint,
+  renderMarkdown: (text) => DOMPurify.sanitize(marked.parse(text) as string),
+})
+```
+
 ## Bring your own agent
 
 ```ts

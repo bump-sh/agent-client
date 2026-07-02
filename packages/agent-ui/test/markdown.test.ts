@@ -28,4 +28,29 @@ describe("renderMarkdown", () => {
     expect(html).toContain("<th>a</th>")
     expect(html).toContain("<td>1</td>")
   })
+
+  it("renders safe links", () => {
+    expect(renderMarkdown("[Bump](https://bump.sh)")).toContain(
+      '<a href="https://bump.sh" target="_blank" rel="noopener">Bump</a>',
+    )
+  })
+
+  it("drops javascript: link schemes to plain text", () => {
+    const html = renderMarkdown("[click](javascript:alert(1))")
+    expect(html).not.toContain("href")
+    expect(html).not.toContain("javascript:")
+    expect(html).toContain("click")
+  })
+
+  it("drops data: link schemes to plain text", () => {
+    const html = renderMarkdown("[x](data:text/html,<script>alert(1)</script>)")
+    expect(html).not.toContain("href")
+    expect(html).not.toContain("data:")
+  })
+
+  it("escapes quotes so a URL cannot break out of the href attribute", () => {
+    const html = renderMarkdown('[x](https://a.com/"onmouseover="alert(1))')
+    expect(html).not.toContain('"onmouseover=')
+    expect(html).toContain("&quot;")
+  })
 })

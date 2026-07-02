@@ -1,15 +1,23 @@
 // A tiny, safe markdown renderer: it escapes all HTML first, then re-introduces
 // only a known subset of tags. No dependency, no raw HTML passthrough.
 
+// Link URLs must start with a known-safe scheme; anything else (javascript:,
+// data:, …) is dropped to plain text. Note: `& < >` are already entity-escaped
+// by renderMarkdown before inline() runs, so only `"` can still break the href.
+const SAFE_URL = /^(https?:|mailto:|#|\/|\.)/i
+const escapeAttr = (url: string): string => url.replace(/"/g, "&quot;")
+
+const link = (_match: string, text: string, url: string): string =>
+  SAFE_URL.test(url)
+    ? `<a href="${escapeAttr(url)}" target="_blank" rel="noopener">${text}</a>`
+    : text
+
 const inline = (s: string): string =>
   s
     .replace(/`([^`]+)`/g, "<code>$1</code>")
     .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
     .replace(/\*([^*]+)\*/g, "<em>$1</em>")
-    .replace(
-      /\[([^\]]+)\]\(([^)\s]+)\)/g,
-      '<a href="$2" target="_blank" rel="noopener">$1</a>',
-    )
+    .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, link)
 
 const isSpecial = (l: string): boolean =>
   /^```|^#{1,3}\s|^\s*[-*]\s+|^\s*\d+\.\s+|^\s*>|^\s*(-{3,}|\*{3,}|_{3,})\s*$/.test(l)
