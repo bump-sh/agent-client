@@ -1,0 +1,37 @@
+{
+  "name": "@bump-sh/agent-client",
+  "version": "0.1.0",
+  "description": "Tiny, dependency-free client for streaming conversations with a Bump.sh agent endpoint.",
+  "type": "module",
+  "license": "MIT",
+  "sideEffects": false,
+  "files": ["dist"],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "check": "biome check src test",
+    "format": "biome format --write src test",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": ["bump.sh", "agent", "mcp", "chat", "streaming", "ndjson"],
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}
