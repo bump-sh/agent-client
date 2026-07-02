@@ -28,6 +28,6 @@
   },
   "keywords": ["bump.sh", "agent", "chat", "widget", "web-component", "ui"],
   "dependencies": {
-    "@bump-sh/agent-client": "*"
+    "@bump-sh/agent-client": "^0.1.0"
   }
 }
