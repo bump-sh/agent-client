@@ -62,8 +62,8 @@ export class Agent {
     done: new Set(),
   }
 
-  constructor(endpoint: string, options: AgentOptions = {}) {
-    this.#endpoint = endpoint
+  constructor(options: AgentOptions) {
+    this.#endpoint = options.endpoint
     this.#headers = options.headers ?? {}
     this.#fetch = options.fetch ?? globalThis.fetch
     this.#messages = options.messages ? [...options.messages] : []

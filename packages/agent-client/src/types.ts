@@ -12,6 +12,8 @@ export type AgentEvent =
   | { type: "error"; error: Error }
 
 export interface AgentOptions {
+  /** The agent chat endpoint URL to POST conversations to. */
+  endpoint: string
   /** Extra request headers (e.g. `Authorization`). */
   headers?: Record<string, string>
   /** Custom fetch implementation (SSR, testing). Defaults to global `fetch`. */

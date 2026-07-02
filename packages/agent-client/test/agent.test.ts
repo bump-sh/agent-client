@@ -10,7 +10,8 @@ function fetchReturning(lines: string[]): typeof fetch {
 
 describe("Agent", () => {
   it("accumulates text and resolves to the final reply", async () => {
-    const agent = new Agent("/chat", {
+    const agent = new Agent({
+      endpoint: "/chat",
       fetch: fetchReturning([
         '{"type":"text","content":"Hello "}\n',
         '{"type":"text","content":"world"}\n',
@@ -29,7 +30,7 @@ describe("Agent", () => {
 
   it("replays history on the next turn", async () => {
     const fetchImpl = fetchReturning(['{"type":"text","content":"ok"}\n'])
-    const agent = new Agent("/chat", { fetch: fetchImpl })
+    const agent = new Agent({ endpoint: "/chat", fetch: fetchImpl })
 
     await agent.send("first")
     await agent.send("second")
@@ -45,7 +46,8 @@ describe("Agent", () => {
   })
 
   it("surfaces text and tool events to callbacks", async () => {
-    const agent = new Agent("/chat", {
+    const agent = new Agent({
+      endpoint: "/chat",
       fetch: fetchReturning([
         '{"type":"tool","names":["get_weather"]}\n',
         '{"type":"text","content":"Sunny"}\n',
@@ -64,7 +66,8 @@ describe("Agent", () => {
   })
 
   it("yields events when iterated", async () => {
-    const agent = new Agent("/chat", {
+    const agent = new Agent({
+      endpoint: "/chat",
       fetch: fetchReturning(['{"type":"text","content":"Hi"}\n', '{"type":"done"}\n']),
     })
 
@@ -75,7 +78,8 @@ describe("Agent", () => {
   })
 
   it("rejects and emits on a server error event", async () => {
-    const agent = new Agent("/chat", {
+    const agent = new Agent({
+      endpoint: "/chat",
       fetch: fetchReturning(['{"type":"error","content":"boom"}\n']),
     })
     const errors: Error[] = []
@@ -86,7 +90,8 @@ describe("Agent", () => {
   })
 
   it("rejects when the request fails", async () => {
-    const agent = new Agent("/chat", {
+    const agent = new Agent({
+      endpoint: "/chat",
       fetch: vi.fn(
         async () => new Response("nope", { status: 500 }),
       ) as unknown as typeof fetch,
@@ -96,7 +101,8 @@ describe("Agent", () => {
   })
 
   it("reset() clears history", async () => {
-    const agent = new Agent("/chat", {
+    const agent = new Agent({
+      endpoint: "/chat",
       fetch: fetchReturning(['{"type":"text","content":"ok"}\n', '{"type":"done"}\n']),
     })
 
@@ -108,7 +114,7 @@ describe("Agent", () => {
 
   it("forwards the abort signal to fetch", async () => {
     const fetchImpl = fetchReturning(['{"type":"done"}\n'])
-    const agent = new Agent("/chat", { fetch: fetchImpl })
+    const agent = new Agent({ endpoint: "/chat", fetch: fetchImpl })
     const controller = new AbortController()
 
     await agent.send("hi", { signal: controller.signal })
