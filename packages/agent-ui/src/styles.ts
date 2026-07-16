@@ -150,17 +150,15 @@ dialog.panel::backdrop { background: transparent; }
 /* ---- composer ---- */
 .composer { flex: none; padding: 10px var(--agent-gutter) 14px; }
 .box {
-  display: flex; flex-direction: column; gap: 6px;
+  display: flex; align-items: flex-end; gap: 8px;
   background: var(--agent-input-bg); border: 1px solid var(--agent-border);
-  border-radius: 24px; padding: 12px 14px 10px; transition: border-color .15s, box-shadow .15s;
+  border-radius: 26px; padding: 6px 6px 6px 18px; transition: border-color .15s;
 }
-.box:focus-within {
-  border-color: #d7d7da;
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--agent-accent) 8%, transparent);
-}
+.box:focus-within { border-color: #d7d7da; }
 .input {
+  flex: 1; min-width: 0;
   background: none; border: 0; color: var(--agent-text); resize: none; outline: none;
-  font: inherit; line-height: 1.5; padding: 2px 2px 0;
+  font: inherit; line-height: 1.5; padding: 8px 0;
   field-sizing: content; max-height: 168px; /* native auto-grow, no JS */
 }
 .input::placeholder { color: var(--agent-muted); }
