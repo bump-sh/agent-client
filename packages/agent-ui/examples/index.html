@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>agent-ui — demo</title>
+    <style>
+      :root {
+        --accent: #4f7cff;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        padding: 32px;
+        font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        color: #1a1a1e;
+        background: #f5f6f8;
+      }
+      .panel {
+        max-width: 560px;
+        margin: 0 auto 24px;
+        padding: 24px;
+        background: #fff;
+        border: 1px solid #e6e8ec;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+      }
+      h1 {
+        margin: 0 0 4px;
+        font-size: 18px;
+      }
+      .sub {
+        margin: 0 0 20px;
+        color: #6b7280;
+        font-size: 13px;
+      }
+      label {
+        display: block;
+        margin-bottom: 14px;
+        font-size: 13px;
+        font-weight: 500;
+        color: #374151;
+      }
+      input {
+        width: 100%;
+        margin-top: 6px;
+        padding: 9px 11px;
+        font-size: 14px;
+        color: inherit;
+        background: #fff;
+        border: 1px solid #d6d9de;
+        border-radius: 8px;
+      }
+      input:focus {
+        outline: 2px solid var(--accent);
+        outline-offset: -1px;
+        border-color: transparent;
+      }
+      .modes {
+        display: flex;
+        gap: 10px;
+        margin-top: 4px;
+      }
+      .modes button {
+        flex: 1;
+        padding: 10px;
+        font-size: 14px;
+        font-weight: 500;
+        color: #fff;
+        cursor: pointer;
+        background: var(--accent);
+        border: 0;
+        border-radius: 8px;
+      }
+      .modes button:hover {
+        filter: brightness(0.95);
+      }
+      #stage {
+        max-width: 560px;
+        height: 70vh;
+        margin: 0 auto;
+        overflow: hidden;
+        background: #fff;
+        border: 1px dashed #cbd0d6;
+        border-radius: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="panel">
+      <h1>agent-ui</h1>
+      <p class="sub">Point it at a running agent endpoint and try the three modes.</p>
+      <label>
+        Endpoint
+        <input id="endpoint" value="http://localhost:3001/demo/weather/agent" />
+      </label>
+      <label>
+        Token <span style="color: #9ca3af; font-weight: 400">(optional — private servers)</span>
+        <input id="token" placeholder="Bearer token" />
+      </label>
+      <div class="modes">
+        <button data-mode="modal">Modal</button>
+        <button data-mode="sidebar">Sidebar</button>
+        <button data-mode="fullscreen">Fullscreen</button>
+      </div>
+    </main>
+
+    <!-- Fullscreen mounts here (fills its parent); modal & sidebar overlay the page. -->
+    <div id="stage"></div>
+
+    <!-- Classic script (not a module) so it loads over file:// too. Build: npm run example -->
+    <script src="./agent-ui.js"></script>
+    <script>
+      let chat;
+      const value = (id) => document.getElementById(id).value.trim();
+
+      for (const button of document.querySelectorAll("[data-mode]")) {
+        button.addEventListener("click", () => {
+          chat?.destroy();
+          const mode = button.dataset.mode;
+          chat = new AgentUI.Chat({
+            endpoint: value("endpoint"),
+            token: value("token") || undefined,
+            mode,
+            target: mode === "fullscreen" ? "#stage" : undefined,
+            open: true,
+          });
+        });
+      }
+    </script>
+  </body>
+</html>

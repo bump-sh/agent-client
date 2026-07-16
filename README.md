@@ -14,8 +14,8 @@ web app. An npm workspaces monorepo.
 import { Agent } from "@bump-sh/agent-client"
 import { Chat }  from "@bump-sh/agent-ui"
 
-const agent = new Agent({ endpoint: "https://…/agent/chat" })  // conversation only
-new Chat({ endpoint: "https://…/agent/chat" })                 // full chat widget
+const agent = new Agent({ endpoint: "https://…/agent" })  // conversation only
+new Chat({ endpoint: "https://…/agent" })                 // full chat widget
 ```
 
 ## Develop

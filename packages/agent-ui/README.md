@@ -20,14 +20,23 @@ npm install @bump-sh/agent-ui
 ```ts
 import { Chat } from "@bump-sh/agent-ui"
 
-new Chat({ endpoint: "https://your-host/demo/weather/agent/chat" })
+new Chat({ endpoint: "https://your-host/demo/weather/agent" })
 ```
 
 That mounts a floating launcher + modal. Or declaratively:
 
 ```html
-<agent-chat endpoint="https://…/agent/chat" mode="sidebar"></agent-chat>
+<agent-chat endpoint="https://…/agent" mode="sidebar"></agent-chat>
 <script type="module" src="https://unpkg.com/@bump-sh/agent-ui"></script>
+```
+
+## Local demo
+
+Build a self-contained bundle and open the page — no server needed:
+
+```sh
+npm run example                 # writes examples/agent-ui.js
+open examples/index.html        # set an endpoint, try the three modes
 ```
 
 ## Options
@@ -98,7 +107,7 @@ new Chat({
 import { Agent } from "@bump-sh/agent-client"
 import { Chat } from "@bump-sh/agent-ui"
 
-const agent = new Agent({ endpoint: "https://…/agent/chat", token: "…" })
+const agent = new Agent({ endpoint: "https://…/agent", token: "…" })
 new Chat({ agent })
 ```
 

@@ -20,7 +20,7 @@ npm install @bump-sh/agent-client
 ```ts
 import { Agent } from "@bump-sh/agent-client"
 
-const agent = new Agent({ endpoint: "https://your-host/demo/weather/agent/chat" })
+const agent = new Agent({ endpoint: "https://your-host/demo/weather/agent" })
 
 agent.on("text", (delta) => {
   document.querySelector("#reply").textContent += delta
