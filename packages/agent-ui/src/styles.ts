@@ -14,7 +14,7 @@ export const css = `
   --agent-input-bg: #f7f7f8;
   --agent-radius: 20px;
   --agent-font: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
-  --agent-width: 24vw;
+  --agent-width: 26vw;
   --agent-z: 2147483000;
 
   /* Layout scale — one source of truth, no per-element pixel nudging. */
@@ -74,7 +74,7 @@ dialog.panel::backdrop { background: transparent; }
 
 :host([mode="sidebar"]) .panel {
   inset: 0 0 0 auto; margin: 0; height: 100dvh;
-  width: min(94vw, max(340px, var(--agent-width)));
+  width: min(94vw, max(400px, var(--agent-width)));
   box-shadow: -8px 0 30px rgba(0, 0, 0, .12);
   border-left: 1px solid var(--agent-border);
 }
@@ -98,7 +98,7 @@ dialog.panel::backdrop { background: transparent; }
 :host([mode="fullscreen"]) .close { display: none; }
 
 /* ---- thread ---- */
-.thread { flex: 1; overflow-y: auto; padding: 8px var(--agent-gutter) 20px;
+.thread { flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: 8px var(--agent-gutter) 20px;
   scrollbar-width: thin; scrollbar-color: var(--agent-border) transparent; }
 .thread.empty { display: flex; align-items: center; justify-content: center; padding-bottom: 80px; }
 .thread:not(.empty) slot[name="empty"] { display: none; }
