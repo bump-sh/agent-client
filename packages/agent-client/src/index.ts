@@ -5,4 +5,5 @@ export type {
   Message,
   Role,
   SendOptions,
+  TokenProvider,
 } from "./types.js"

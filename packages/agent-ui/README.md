@@ -35,7 +35,8 @@ That mounts a floating launcher + modal. Or declaratively:
 ```ts
 const chat = new Chat({
   endpoint,                         // OR agent: myAgent  (bring your own)
-  headers,                          // forwarded to the built-in Agent (auth)
+  token,                            // auth: string | () => string | Promise<string>
+  headers,                          // extra request headers (config, not auth)
   mode: "modal",                    // "modal" | "sidebar" | "fullscreen"
   target: "#app",                   // fullscreen container; modal/sidebar → <body>
   open: false,                      // start opened
@@ -52,6 +53,24 @@ const chat = new Chat({
 chat.open(); chat.close(); chat.toggle(); chat.destroy()
 chat.agent // the underlying Agent
 ```
+
+### Authentication
+
+Pass a `token` — it's sent to the endpoint as `Authorization: Bearer <token>`.
+Use a callback for short-lived tokens; it's re-evaluated on every request, so
+the token refreshes without remounting the widget:
+
+```ts
+new Chat({
+  endpoint,
+  token: async () => (await fetch("/agent-token")).text(),
+})
+```
+
+The token lives in the browser, so **mint a user-scoped, short-lived token
+server-side** — where the page already knows who the logged-in user is — and
+never expose a raw or tenant-wide API key. `headers` is only for non-auth
+config the endpoint expects.
 
 ### Markdown rendering
 
@@ -79,7 +98,7 @@ new Chat({
 import { Agent } from "@bump-sh/agent-client"
 import { Chat } from "@bump-sh/agent-ui"
 
-const agent = new Agent({ endpoint: "https://…/agent/chat", headers: { Authorization: "Bearer …" } })
+const agent = new Agent({ endpoint: "https://…/agent/chat", token: "…" })
 new Chat({ agent })
 ```
 

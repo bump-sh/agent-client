@@ -1,5 +1,11 @@
 import { parseNdjson } from "./stream.js"
-import type { AgentEvent, AgentOptions, Message, SendOptions } from "./types.js"
+import type {
+  AgentEvent,
+  AgentOptions,
+  Message,
+  SendOptions,
+  TokenProvider,
+} from "./types.js"
 
 type Listeners = {
   text: (delta: string) => void
@@ -54,6 +60,7 @@ export class StreamResult implements AsyncIterable<AgentEvent>, PromiseLike<stri
  */
 export class Agent {
   #endpoint: string
+  #token?: TokenProvider
   #headers: Record<string, string>
   #fetch: typeof fetch
   #messages: Message[]
@@ -67,6 +74,7 @@ export class Agent {
 
   constructor(options: AgentOptions) {
     this.#endpoint = options.endpoint
+    this.#token = options.token
     this.#headers = options.headers ?? {}
     this.#fetch = options.fetch ?? globalThis.fetch
     this.#messages = options.messages ? [...options.messages] : []
@@ -130,11 +138,16 @@ export class Agent {
     }
   }
 
-  #request(signal?: AbortSignal): Promise<Response> {
+  async #request(signal?: AbortSignal): Promise<Response> {
     const doFetch = this.#fetch
+    const token = typeof this.#token === "function" ? await this.#token() : this.#token
     return doFetch(this.#endpoint, {
       method: "POST",
-      headers: { "Content-Type": "application/json", ...this.#headers },
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...this.#headers,
+      },
       body: JSON.stringify({ messages: this.#messages }),
       signal,
     })

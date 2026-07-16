@@ -130,6 +130,43 @@ describe("Agent", () => {
     expect(agent.messages).toEqual([])
   })
 
+  it("sends a string token as an Authorization bearer header", async () => {
+    const fetchImpl = fetchReturning(['{"type":"done"}\n'])
+    const agent = new Agent({ endpoint: "/chat", fetch: fetchImpl, token: "t0ken" })
+
+    await agent.send("hi")
+
+    const init = (fetchImpl as ReturnType<typeof vi.fn>).mock.calls[0][1]
+    expect(init.headers.Authorization).toBe("Bearer t0ken")
+  })
+
+  it("re-evaluates a token callback on every request so it can refresh", async () => {
+    const fetchImpl = fetchReturning(['{"type":"done"}\n'])
+    let n = 0
+    const agent = new Agent({
+      endpoint: "/chat",
+      fetch: fetchImpl,
+      token: async () => `t${++n}`,
+    })
+
+    await agent.send("first")
+    await agent.send("second")
+
+    const calls = (fetchImpl as ReturnType<typeof vi.fn>).mock.calls
+    expect(calls[0][1].headers.Authorization).toBe("Bearer t1")
+    expect(calls[1][1].headers.Authorization).toBe("Bearer t2")
+  })
+
+  it("omits Authorization when no token is given", async () => {
+    const fetchImpl = fetchReturning(['{"type":"done"}\n'])
+    const agent = new Agent({ endpoint: "/chat", fetch: fetchImpl })
+
+    await agent.send("hi")
+
+    const init = (fetchImpl as ReturnType<typeof vi.fn>).mock.calls[0][1]
+    expect(init.headers.Authorization).toBeUndefined()
+  })
+
   it("forwards the abort signal to fetch", async () => {
     const fetchImpl = fetchReturning(['{"type":"done"}\n'])
     const agent = new Agent({ endpoint: "/chat", fetch: fetchImpl })

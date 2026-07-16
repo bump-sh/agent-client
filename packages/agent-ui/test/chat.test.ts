@@ -1,5 +1,5 @@
 import type { AgentEvent } from "@bump-sh/agent-client"
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 import { Chat } from "../src/index.js"
 import type { AgentLike } from "../src/types.js"
 
@@ -54,6 +54,21 @@ describe("Chat", () => {
 
     panel.dispatchEvent(new MouseEvent("click", { bubbles: true }))
     expect(chat.element.hasAttribute("open")).toBe(false)
+    chat.destroy()
+  })
+
+  it("forwards a token to the built-in agent as an Authorization header", async () => {
+    const fetchMock = vi.fn(async () => new Response('{"type":"done"}\n'))
+    vi.stubGlobal("fetch", fetchMock)
+
+    const chat = new Chat({ endpoint: "/chat", token: "s3cret" })
+    for await (const _event of chat.agent.send("hi")) {
+      // drain the stream so the request actually fires
+    }
+
+    expect(fetchMock.mock.calls[0][1].headers.Authorization).toBe("Bearer s3cret")
+
+    vi.unstubAllGlobals()
     chat.destroy()
   })
 

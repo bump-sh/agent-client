@@ -11,10 +11,19 @@ export type AgentEvent =
   | { type: "tool"; names: string[] }
   | { type: "error"; error: Error }
 
+/** A bearer token, or a callback re-evaluated per request (for short-lived tokens). */
+export type TokenProvider = string | (() => string | Promise<string>)
+
 export interface AgentOptions {
   /** The agent chat endpoint URL to POST conversations to. */
   endpoint: string
-  /** Extra request headers (e.g. `Authorization`). */
+  /**
+   * Bearer token sent as `Authorization: Bearer <token>`. Pass a string, or a
+   * callback re-evaluated on every request so short-lived tokens can refresh.
+   * Mint a user-scoped, short-lived token server-side — never ship a raw key.
+   */
+  token?: TokenProvider
+  /** Extra request headers (config, not auth — prefer `token` for auth). */
   headers?: Record<string, string>
   /** Custom fetch implementation (SSR, testing). Defaults to global `fetch`. */
   fetch?: typeof fetch

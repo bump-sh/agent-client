@@ -52,12 +52,26 @@ for await (const event of agent.send("What's the weather in Paris?")) {
 
 ### `new Agent(options)`
 
-| option     | type                       | description                                        |
-| ---------- | -------------------------- | -------------------------------------------------- |
-| `endpoint` | `string` (required)        | The agent chat endpoint URL.                       |
-| `headers`  | `Record<string, string>`   | Extra request headers (e.g. `Authorization`).      |
-| `fetch`    | `typeof fetch`             | Custom fetch (SSR, testing). Defaults to `fetch`.  |
-| `messages` | `Message[]`                | Seed the conversation history.                     |
+| option     | type                                          | description                                                        |
+| ---------- | --------------------------------------------- | ------------------------------------------------------------------ |
+| `endpoint` | `string` (required)                           | The agent chat endpoint URL.                                       |
+| `token`    | `string \| () => string \| Promise<string>`   | Bearer token → `Authorization`. A callback is re-evaluated per request, so short-lived tokens refresh. |
+| `headers`  | `Record<string, string>`                      | Extra request headers (config, not auth — prefer `token`).         |
+| `fetch`    | `typeof fetch`                                | Custom fetch (SSR, testing). Defaults to `fetch`.                  |
+| `messages` | `Message[]`                                   | Seed the conversation history.                                     |
+
+### Authentication
+
+Pass a `token` — it's sent as `Authorization: Bearer <token>`:
+
+```ts
+// short-lived token, refreshed transparently on every turn
+new Agent({ endpoint, token: async () => (await fetch("/agent-token")).text() })
+```
+
+The token travels in the browser, so **mint a user-scoped, short-lived token
+server-side** (a signed JWT your API verifies is ideal) — never ship a raw or
+tenant-wide API key to the page.
 
 ### `agent.send(content, { signal? })`
 

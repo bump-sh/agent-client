@@ -1,4 +1,5 @@
 import { Agent } from "@bump-sh/agent-client"
+import type { TokenProvider } from "@bump-sh/agent-client"
 import { Controller } from "./controller.js"
 import { renderMarkdown as defaultMarkdown } from "./markdown.js"
 import { css } from "./styles.js"
@@ -62,6 +63,7 @@ export class AgentChat extends HTMLElement {
   #providedAgent?: AgentLike
   #agentInstance?: AgentLike
   #endpoint?: string
+  #token?: TokenProvider
   #headers: Record<string, string> = {}
   #mode: Mode = "modal"
   #titleText = "Assistant"
@@ -89,6 +91,7 @@ export class AgentChat extends HTMLElement {
   configure(options: {
     agent?: AgentLike
     endpoint?: string
+    token?: TokenProvider
     headers?: Record<string, string>
     mode?: Mode
     title?: string
@@ -103,6 +106,7 @@ export class AgentChat extends HTMLElement {
   }): this {
     if (options.agent) this.#providedAgent = options.agent
     if (options.endpoint) this.setAttribute("endpoint", options.endpoint)
+    if (options.token != null) this.#token = options.token
     if (options.headers) this.#headers = options.headers
     this.setAttribute("mode", options.mode ?? this.#mode)
     if (options.title != null) this.setAttribute("title", options.title)
@@ -133,6 +137,7 @@ export class AgentChat extends HTMLElement {
         throw new Error("agent-chat: set `endpoint` or provide an `agent`.")
       this.#agentInstance = new Agent({
         endpoint: this.#endpoint,
+        token: this.#token,
         headers: this.#headers,
       })
     }

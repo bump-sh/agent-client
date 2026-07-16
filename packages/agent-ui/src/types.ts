@@ -1,4 +1,4 @@
-import type { AgentEvent } from "@bump-sh/agent-client"
+import type { AgentEvent, TokenProvider } from "@bump-sh/agent-client"
 
 export type Mode = "modal" | "sidebar" | "fullscreen"
 
@@ -37,7 +37,13 @@ export interface ChatOptions {
   endpoint?: string
   /** Bring your own agent instance instead of building one from `endpoint`. */
   agent?: AgentLike
-  /** Extra request headers forwarded to the built-in Agent (e.g. auth). */
+  /**
+   * Bearer token for the built-in Agent, sent as `Authorization`. String, or a
+   * callback re-evaluated per request so short-lived tokens refresh. This is the
+   * recommended way to authenticate — mint a user-scoped token server-side.
+   */
+  token?: TokenProvider
+  /** Extra request headers for the built-in Agent (config, not auth — prefer `token`). */
   headers?: Record<string, string>
   /** Display mode. Defaults to "modal". */
   mode?: Mode
