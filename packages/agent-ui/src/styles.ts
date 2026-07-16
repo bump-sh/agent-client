@@ -158,7 +158,7 @@ dialog.panel::backdrop { background: transparent; }
 .input {
   flex: 1; min-width: 0;
   background: none; border: 0; color: var(--agent-text); resize: none; outline: none;
-  font: inherit; line-height: 1.5; padding: 8px 0;
+  font: inherit; line-height: 1.5; padding: 6px 0;
   field-sizing: content; max-height: 168px; /* native auto-grow, no JS */
 }
 .input::placeholder { color: var(--agent-muted); }
@@ -166,9 +166,9 @@ dialog.panel::backdrop { background: transparent; }
 .send {
   flex: none; width: 36px; height: 36px; border: 0; border-radius: 50%; cursor: pointer;
   background: var(--agent-send-bg); color: #fff;
-  display: flex; align-items: center; justify-content: center; transition: opacity .15s, transform .1s;
+  display: flex; align-items: center; justify-content: center; transition: background .15s, opacity .15s;
 }
-.send:hover:not(:disabled) { transform: translateY(-1px); }
+.send:hover:not(:disabled) { background: #262626; }
 .send:disabled { opacity: .38; cursor: default; }
 .send svg { width: 18px; height: 18px; }
 
