@@ -1,16 +1,17 @@
 // Shadow-DOM CSS. Light, modern, sober defaults. Themeable via --agent-* tokens.
 export const css = `
 :host {
-  --agent-accent: #4f7cff;
+  --agent-accent: #0a0a0a;
   --agent-bg: #ffffff;
-  --agent-text: #1a1a1a;
+  --agent-text: #0d0d0d;
   --agent-muted: #8a8a8f;
-  --agent-user-bg: #f1f1f3;
-  --agent-border: #e7e7ea;
+  --agent-user-bg: #f4f4f5;
+  --agent-border: #ececee;
   --agent-code-bg: #f4f4f6;
   --agent-th: #f7f7f8;
-  --agent-avatar-bg: #f0f0f3;
-  --agent-send-bg: #3a3a42;
+  --agent-avatar-bg: #f1f1f3;
+  --agent-send-bg: #0a0a0a;
+  --agent-input-bg: #f7f7f8;
   --agent-radius: 20px;
   --agent-font: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
   --agent-width: 24vw;
@@ -129,7 +130,7 @@ dialog.panel::backdrop { background: transparent; }
 .body h3, .body h4, .body h5 { margin: 1em 0 .4em; line-height: 1.3; }
 .body ul, .body ol { margin: .5em 0; padding-left: 1.4em; }
 .body li { margin: .2em 0; }
-.body a { color: var(--agent-accent); }
+.body a { color: var(--agent-accent); text-decoration: underline; text-underline-offset: 2px; }
 .body code { background: var(--agent-code-bg); padding: .1em .4em; border-radius: 5px; font-size: .9em; }
 .body pre { background: var(--agent-code-bg); padding: 12px 14px; border-radius: 12px; overflow-x: auto; }
 .body pre code { background: none; padding: 0; }
@@ -150,12 +151,12 @@ dialog.panel::backdrop { background: transparent; }
 .composer { flex: none; padding: 10px var(--agent-gutter) 14px; }
 .box {
   display: flex; flex-direction: column; gap: 6px;
-  background: var(--agent-bg); border: 1px solid var(--agent-border);
-  border-radius: 22px; padding: 12px 14px 10px; transition: border-color .15s, box-shadow .15s;
+  background: var(--agent-input-bg); border: 1px solid var(--agent-border);
+  border-radius: 24px; padding: 12px 14px 10px; transition: border-color .15s, box-shadow .15s;
 }
 .box:focus-within {
-  border-color: var(--agent-accent);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--agent-accent) 22%, transparent);
+  border-color: #d7d7da;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--agent-accent) 8%, transparent);
 }
 .input {
   background: none; border: 0; color: var(--agent-text); resize: none; outline: none;

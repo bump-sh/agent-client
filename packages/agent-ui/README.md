@@ -125,8 +125,8 @@ agent-chat {
 ```
 
 Tokens: `--agent-accent`, `--agent-bg`, `--agent-text`, `--agent-muted`,
-`--agent-user-bg`, `--agent-border`, `--agent-code-bg`, `--agent-font`,
-`--agent-radius`, `--agent-width`, `--agent-z`.
+`--agent-user-bg`, `--agent-input-bg`, `--agent-border`, `--agent-code-bg`,
+`--agent-font`, `--agent-radius`, `--agent-width`, `--agent-z`.
 
 Style internal structure with `::part()`:
 
