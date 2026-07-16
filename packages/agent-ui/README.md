@@ -4,7 +4,7 @@ Embeddable, themeable chat widget for Bump.sh agents. A Web Component you drop i
 with 3 lines — fully isolated (Shadow DOM), fully customizable.
 
 - **3-line path** — `new Chat({ endpoint })` and you have a chat box.
-- **3 display modes** — `modal` (default), `sidebar`, `fullscreen`.
+- **3 display modes** — `modal` (default), `sidebar`, `inline`.
 - **Isolated** — Shadow DOM: the host page's CSS can't leak in, and vice versa.
 - **Customizable** — CSS tokens, `::part()`, slots, and options.
 - **BYO agent** — pass your own [`@bump-sh/agent-client`](../agent-client) `Agent`.
@@ -46,8 +46,8 @@ const chat = new Chat({
   endpoint,                         // OR agent: myAgent  (bring your own)
   token,                            // auth: string | () => string | Promise<string>
   headers,                          // extra request headers (config, not auth)
-  mode: "modal",                    // "modal" | "sidebar" | "fullscreen"
-  target: "#app",                   // fullscreen container; modal/sidebar → <body>
+  mode: "modal",                    // "modal" | "sidebar" | "inline"
+  target: "#app",                   // inline container; modal/sidebar → <body>
   open: false,                      // start opened
   theme: { accent: "#4f7cff" },     // → CSS custom properties
   title: "Assistant",

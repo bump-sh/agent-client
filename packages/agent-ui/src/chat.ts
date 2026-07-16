@@ -3,7 +3,7 @@ import type { AgentLike, ChatOptions } from "./types.js"
 
 function resolveTarget(options: ChatOptions): HTMLElement {
   // Modal/sidebar float over the page → always attach to <body>.
-  if (options.mode && options.mode !== "fullscreen") return document.body
+  if (options.mode && options.mode !== "inline") return document.body
   if (typeof options.target === "string") {
     const el = document.querySelector(options.target)
     if (!el) throw new Error(`Chat: target "${options.target}" not found.`)

@@ -103,11 +103,11 @@
       <div class="modes">
         <button data-mode="modal">Modal</button>
         <button data-mode="sidebar">Sidebar</button>
-        <button data-mode="fullscreen">Fullscreen</button>
+        <button data-mode="inline">Inline</button>
       </div>
     </main>
 
-    <!-- Fullscreen mounts here (fills its parent); modal & sidebar overlay the page. -->
+    <!-- Inline mounts here (fills its parent); modal & sidebar overlay the page. -->
     <div id="stage"></div>
 
     <!-- Classic script (not a module) so it loads over file:// too. Build: npm run example -->
@@ -124,7 +124,7 @@
             endpoint: value("endpoint"),
             token: value("token") || undefined,
             mode,
-            target: mode === "fullscreen" ? "#stage" : undefined,
+            target: mode === "inline" ? "#stage" : undefined,
             open: true,
           });
         });

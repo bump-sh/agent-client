@@ -1,6 +1,6 @@
 import type { AgentEvent, TokenProvider } from "@bump-sh/agent-client"
 
-export type Mode = "modal" | "sidebar" | "fullscreen"
+export type Mode = "modal" | "sidebar" | "inline"
 
 /** The minimal shape the widget needs from an agent. `Agent` satisfies it. */
 export interface AgentLike {
@@ -47,9 +47,9 @@ export interface ChatOptions {
   headers?: Record<string, string>
   /** Display mode. Defaults to "modal". */
   mode?: Mode
-  /** Where to attach the element. Fullscreen → container; modal/sidebar → body. */
+  /** Where to attach the element. Inline → container; modal/sidebar → body. */
   target?: string | HTMLElement
-  /** Start opened (modal/sidebar). Fullscreen is always open. */
+  /** Start opened (modal/sidebar). Inline is always open. */
   open?: boolean
   theme?: Theme
   title?: string

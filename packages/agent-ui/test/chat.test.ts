@@ -73,7 +73,7 @@ describe("Chat", () => {
   })
 
   it("streams a reply into the thread when a message is sent", async () => {
-    const chat = new Chat({ agent: fakeAgent(), mode: "fullscreen" })
+    const chat = new Chat({ agent: fakeAgent(), mode: "inline" })
     const shadow = chat.element.shadowRoot as ShadowRoot
     const input = shadow.querySelector(".input") as HTMLTextAreaElement
     const form = shadow.querySelector(".composer") as HTMLFormElement

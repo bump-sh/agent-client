@@ -20,7 +20,7 @@ export const css = `
   /* Layout scale — one source of truth, no per-element pixel nudging. */
   --agent-gutter: 18px;       /* horizontal padding of header, thread, composer */
   --agent-avatar-size: 28px;  /* avatar box; assistant rows align against it */
-  --agent-column: 760px;      /* readable conversation width in fullscreen */
+  --agent-column: 760px;      /* readable conversation width in inline */
 
   font-family: var(--agent-font);
   color: var(--agent-text);
@@ -40,7 +40,7 @@ export const css = `
 }
 .launcher:hover { transform: translateY(-2px); }
 .launcher svg { width: 26px; height: 26px; }
-:host([mode="fullscreen"]) .launcher { display: none; }
+:host([mode="inline"]) .launcher { display: none; }
 :host([open]) .launcher { display: none; }
 
 /* ---- panel ---- */
@@ -51,12 +51,12 @@ export const css = `
 :host([open]) .panel { display: flex; }
 
 /* Fill the host element (which fills whatever container it is placed in). */
-:host([mode="fullscreen"]) { display: block; width: 100%; height: 100%; }
-:host([mode="fullscreen"]) .panel { width: 100%; height: 100%; }
+:host([mode="inline"]) { display: block; width: 100%; height: 100%; }
+:host([mode="inline"]) .panel { width: 100%; height: 100%; }
 /* Center the conversation in a readable column on wide screens. */
-:host([mode="fullscreen"]) .header,
-:host([mode="fullscreen"]) .thread,
-:host([mode="fullscreen"]) .composer {
+:host([mode="inline"]) .header,
+:host([mode="inline"]) .thread,
+:host([mode="inline"]) .composer {
   padding-inline: max(var(--agent-gutter), calc((100% - var(--agent-column)) / 2));
 }
 
@@ -95,7 +95,7 @@ dialog.panel::backdrop { background: transparent; }
 }
 .close:hover { background: var(--agent-user-bg); color: var(--agent-text); }
 .close svg { width: 20px; height: 20px; }
-:host([mode="fullscreen"]) .close { display: none; }
+:host([mode="inline"]) .close { display: none; }
 
 /* ---- thread ---- */
 .thread { flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: 8px var(--agent-gutter) 20px;

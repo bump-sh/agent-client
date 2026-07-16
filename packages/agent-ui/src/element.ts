@@ -158,7 +158,7 @@ export class AgentChat extends HTMLElement {
     this.#readAttributes()
     this.setAttribute("mode", this.#mode)
     this.#build()
-    if (this.#mode === "fullscreen" || this.hasAttribute("open")) this.open()
+    if (this.#mode === "inline" || this.hasAttribute("open")) this.open()
   }
 
   attributeChangedCallback(
@@ -223,9 +223,9 @@ export class AgentChat extends HTMLElement {
 
   #template(): string {
     // modal & sidebar are top-layer <dialog>s → native Escape + focus trap.
-    const panelTag = this.#mode === "fullscreen" ? "div" : "dialog"
+    const panelTag = this.#mode === "inline" ? "div" : "dialog"
     const launcher =
-      this.#mode === "fullscreen"
+      this.#mode === "inline"
         ? ""
         : `<button class="launcher" part="launcher" aria-label="${attr(this.#labels.launch ?? "Open chat")}">${CHAT_ICON}</button>`
     const subtitle = this.#subtitleText
@@ -277,7 +277,7 @@ export class AgentChat extends HTMLElement {
       ?.addEventListener("submit", (e) => this.#submit(e))
     this.#input?.addEventListener("input", () => this.#syncSend())
     this.#input?.addEventListener("keydown", (e) => this.#onKeydown(e as KeyboardEvent))
-    if (this.#mode !== "fullscreen") {
+    if (this.#mode !== "inline") {
       // Native <dialog>: Escape fires "close"; a click on the backdrop targets
       // the dialog itself (not its children) → dismiss when clicking outside.
       this.#panel?.addEventListener("close", () => this.removeAttribute("open"))
@@ -289,7 +289,7 @@ export class AgentChat extends HTMLElement {
 
   #reflectOpen(open: boolean): void {
     if (!this.#built) return
-    if (this.#mode !== "fullscreen") {
+    if (this.#mode !== "inline") {
       const dialog = this.#panel as HTMLDialogElement
       try {
         open ? dialog.showModal() : dialog.close()
