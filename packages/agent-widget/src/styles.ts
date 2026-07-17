@@ -14,6 +14,7 @@ export const css = `
   --agent-input-bg: #f7f7f8;
   --agent-radius: 20px;
   --agent-font: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --agent-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
   --agent-width: 26vw;
   --agent-z: 2147483000;
 
@@ -141,6 +142,8 @@ dialog.panel::backdrop { background: transparent; }
 .body blockquote { margin: .6em 0; padding: 2px 0 2px 12px; border-left: 3px solid var(--agent-border); color: var(--agent-muted); }
 
 .status { display: flex; align-items: center; gap: 8px; min-height: var(--agent-avatar-size); color: var(--agent-muted); font-size: .92em; }
+.status-icon { width: 16px; height: 16px; flex: none; opacity: .8; }
+.status-label { font-family: var(--agent-mono); font-size: .92em; }
 .loader { display: inline-flex; gap: 4px; }
 .loader span { width: 6px; height: 6px; border-radius: 50%; background: var(--agent-muted); animation: agent-blink 1.2s infinite both; }
 .loader span:nth-child(2) { animation-delay: .2s; }

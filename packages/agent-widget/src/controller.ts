@@ -4,6 +4,7 @@ const escapeHtml = (s: string): string =>
   s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
 
 const SPINNER = '<span class="loader"><span></span><span></span><span></span></span>'
+const TOOL_ICON = `<svg class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18v3h3l6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.1-.4-.4-2.1 2.5-2.5z"/></svg>`
 
 export interface ControllerOptions {
   render: (text: string) => string
@@ -57,7 +58,7 @@ export class Controller {
           paint()
         } else if (event.type === "tool") {
           if (acc && !acc.endsWith("\n\n")) acc += "\n\n"
-          liveTool = `🔧 ${escapeHtml(event.names.join(", ").replace(/_/g, " "))} `
+          liveTool = escapeHtml(event.names.join(", ").replace(/_/g, " "))
           paint()
         } else if (event.type === "error") {
           errorMessage = "Something went wrong."
@@ -77,7 +78,10 @@ export class Controller {
   }
 
   #liveStatus(tool: string): string {
-    return `<div class="status" part="status">${tool}${SPINNER}</div>`
+    const label = tool
+      ? `${TOOL_ICON}<span class="status-label">${tool}</span>`
+      : ""
+    return `<div class="status" part="status">${label}${SPINNER}</div>`
   }
 
   #userTurn(text: string): void {
