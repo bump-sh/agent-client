@@ -47,6 +47,7 @@ const chat = new Chat({
   token,                            // auth: string | () => string | Promise<string>
   headers,                          // extra request headers (config, not auth)
   mode: "modal",                    // "modal" | "sidebar" | "inline"
+  launcher: true,                   // floating launcher button (modal/sidebar); false to open it yourself
   target: "#app",                   // inline container; modal/sidebar → <body>
   open: false,                      // start opened
   theme: { accent: "#4f7cff" },     // → CSS custom properties

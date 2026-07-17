@@ -47,6 +47,8 @@ export interface ChatOptions {
   headers?: Record<string, string>
   /** Display mode. Defaults to "modal". */
   mode?: Mode
+  /** Show the floating launcher button (modal/sidebar). Default true. */
+  launcher?: boolean
   /** Where to attach the element. Inline → container; modal/sidebar → body. */
   target?: string | HTMLElement
   /** Start opened (modal/sidebar). Inline is always open. */

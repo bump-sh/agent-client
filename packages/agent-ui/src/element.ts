@@ -66,6 +66,7 @@ export class AgentChat extends HTMLElement {
   #token?: TokenProvider
   #headers: Record<string, string> = {}
   #mode: Mode = "modal"
+  #showLauncher = true
   #titleText = "Assistant"
   #subtitleText?: string
   #placeholderText = "Ask anything…"
@@ -94,6 +95,7 @@ export class AgentChat extends HTMLElement {
     token?: TokenProvider
     headers?: Record<string, string>
     mode?: Mode
+    launcher?: boolean
     title?: string
     subtitle?: string
     placeholder?: string
@@ -109,6 +111,7 @@ export class AgentChat extends HTMLElement {
     if (options.token != null) this.#token = options.token
     if (options.headers) this.#headers = options.headers
     this.setAttribute("mode", options.mode ?? this.#mode)
+    if (options.launcher === false) this.#showLauncher = false
     if (options.title != null) this.setAttribute("title", options.title)
     if (options.subtitle != null) this.setAttribute("subtitle", options.subtitle)
     if (options.placeholder != null)
@@ -225,7 +228,7 @@ export class AgentChat extends HTMLElement {
     // modal & sidebar are top-layer <dialog>s → native Escape + focus trap.
     const panelTag = this.#mode === "inline" ? "div" : "dialog"
     const launcher =
-      this.#mode === "inline"
+      this.#mode === "inline" || !this.#showLauncher
         ? ""
         : `<button class="launcher" part="launcher" aria-label="${attr(this.#labels.launch ?? "Open chat")}">${CHAT_ICON}</button>`
     const subtitle = this.#subtitleText

@@ -42,6 +42,16 @@ describe("Chat", () => {
     chat.destroy()
   })
 
+  it("renders the launcher by default but omits it when launcher is false", () => {
+    const shown = new Chat({ agent: fakeAgent(), mode: "modal" })
+    expect(shown.element.shadowRoot?.querySelector(".launcher")).not.toBeNull()
+    shown.destroy()
+
+    const hidden = new Chat({ agent: fakeAgent(), mode: "modal", launcher: false })
+    expect(hidden.element.shadowRoot?.querySelector(".launcher")).toBeNull()
+    hidden.destroy()
+  })
+
   it("dismisses on an outside click but not on clicks inside the panel", () => {
     const chat = new Chat({ agent: fakeAgent(), mode: "sidebar", open: true })
     const shadow = chat.element.shadowRoot as ShadowRoot
