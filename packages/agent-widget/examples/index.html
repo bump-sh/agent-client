@@ -113,14 +113,14 @@
     <!-- Classic script (not a module) so it loads over file:// too. Build: npm run example -->
     <script src="./agent-widget.js"></script>
     <script>
-      let chat;
+      let widget;
       const value = (id) => document.getElementById(id).value.trim();
 
       for (const button of document.querySelectorAll("[data-mode]")) {
         button.addEventListener("click", () => {
-          chat?.destroy();
+          widget?.destroy();
           const mode = button.dataset.mode;
-          chat = new AgentWidget.Widget({
+          widget = new Bump.Widget({
             endpoint: value("endpoint"),
             token: value("token") || undefined,
             mode,
