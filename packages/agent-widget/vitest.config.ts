@@ -6,8 +6,8 @@ export default defineConfig({
   resolve: {
     alias: {
       // Run tests against the sibling package's source — no prior build needed.
-      "@bump-sh/agent-client": fileURLToPath(
-        new URL("../agent-client/src/index.ts", import.meta.url),
+      "@bump-sh/agent-conversation": fileURLToPath(
+        new URL("../agent-conversation/src/index.ts", import.meta.url),
       ),
     },
   },

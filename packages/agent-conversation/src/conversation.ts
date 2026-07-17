@@ -1,7 +1,7 @@
 import { parseNdjson } from "./stream.js"
 import type {
   AgentEvent,
-  AgentOptions,
+  ConversationOptions,
   Message,
   SendOptions,
   TokenProvider,
@@ -16,7 +16,7 @@ type Listeners = {
 }
 
 /**
- * The return value of {@link Agent.send}. Consume it ONCE, either way:
+ * The return value of {@link Conversation.send}. Consume it ONCE, either way:
  * - `await result` resolves to the assembled assistant reply (rejects on error).
  * - `for await (const event of result)` yields each streamed event.
  *
@@ -58,7 +58,7 @@ export class StreamResult implements AsyncIterable<AgentEvent>, PromiseLike<stri
  * A stateful conversation with a single Bump.sh agent endpoint. It keeps the
  * message history and replays it on every {@link send}.
  */
-export class Agent {
+export class Conversation {
   #endpoint: string
   #token?: TokenProvider
   #headers: Record<string, string>
@@ -72,7 +72,7 @@ export class Agent {
     done: new Set(),
   }
 
-  constructor(options: AgentOptions) {
+  constructor(options: ConversationOptions) {
     this.#endpoint = options.endpoint
     this.#token = options.token
     this.#headers = options.headers ?? {}
@@ -109,7 +109,7 @@ export class Agent {
     try {
       const response = await this.#request(options.signal)
       if (!response.ok || !response.body) {
-        throw new Error(`Agent request failed with status ${response.status}`)
+        throw new Error(`Conversation request failed with status ${response.status}`)
       }
       for await (const event of parseNdjson(response.body)) {
         if (event.type === "text") {

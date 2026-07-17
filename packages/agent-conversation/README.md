@@ -1,38 +1,40 @@
-# @bump-sh/agent-client
+# @bump-sh/agent-conversation
 
-Tiny, dependency-free client for streaming conversations with an
+Tiny, dependency-free client for streaming a conversation with an
 [Bump.sh](https://bump.sh) agent endpoint. Drop it into any web app to let your
 users chat with an agent scoped to your MCP server.
 
 - **Zero dependencies** — uses native `fetch` / `ReadableStream`.
-- **Stateful** — keeps the conversation history for you.
+- **Stateful** — keeps the message history for you.
 - **Two styles, one call** — `await` the reply, or `for await` the stream.
 - **TypeScript** — fully typed events.
 
 ## Install
 
 ```sh
-npm install @bump-sh/agent-client
+npm install @bump-sh/agent-conversation
 ```
 
 ## Quickstart (the 5-minute path)
 
 ```ts
-import { Agent } from "@bump-sh/agent-client"
+import { Conversation } from "@bump-sh/agent-conversation"
 
-const agent = new Agent({ endpoint: "https://your-host/demo/weather/agent" })
+const conversation = new Conversation({
+  endpoint: "https://your-host/demo/weather/agent",
+})
 
-agent.on("text", (delta) => {
+conversation.on("text", (delta) => {
   document.querySelector("#reply").textContent += delta
 })
 
-await agent.send("What's the weather in Paris?")
+await conversation.send("What's the weather in Paris?")
 ```
 
 `send()` resolves to the full assistant reply, so you can also just:
 
 ```ts
-const reply = await agent.send("What's the weather in Paris?")
+const reply = await conversation.send("What's the weather in Paris?")
 console.log(reply)
 ```
 
@@ -41,7 +43,7 @@ console.log(reply)
 Same call — iterate it instead of awaiting:
 
 ```ts
-for await (const event of agent.send("What's the weather in Paris?")) {
+for await (const event of conversation.send("What's the weather in Paris?")) {
   if (event.type === "text") append(event.delta)
   if (event.type === "tool") showToolActivity(event.names)
   if (event.type === "error") showError(event.error)
@@ -50,11 +52,11 @@ for await (const event of agent.send("What's the weather in Paris?")) {
 
 ## API
 
-### `new Agent(options)`
+### `new Conversation(options)`
 
 | option     | type                                          | description                                                        |
 | ---------- | --------------------------------------------- | ------------------------------------------------------------------ |
-| `endpoint` | `string` (required)                           | The agent chat endpoint URL.                                       |
+| `endpoint` | `string` (required)                           | The agent endpoint URL to POST to.                                 |
 | `token`    | `string \| () => string \| Promise<string>`   | Bearer token → `Authorization`. A callback is re-evaluated per request, so short-lived tokens refresh. |
 | `headers`  | `Record<string, string>`                      | Extra request headers (config, not auth — prefer `token`).         |
 | `fetch`    | `typeof fetch`                                | Custom fetch (SSR, testing). Defaults to `fetch`.                  |
@@ -66,33 +68,36 @@ Pass a `token` — it's sent as `Authorization: Bearer <token>`:
 
 ```ts
 // short-lived token, refreshed transparently on every turn
-new Agent({ endpoint, token: async () => (await fetch("/agent-token")).text() })
+new Conversation({
+  endpoint,
+  token: async () => (await fetch("/agent-token")).text(),
+})
 ```
 
 The token travels in the browser, so **mint a user-scoped, short-lived token
 server-side** (a signed JWT your API verifies is ideal) — never ship a raw or
 tenant-wide API key to the page.
 
-### `agent.send(content, { signal? })`
+### `conversation.send(content, { signal? })`
 
 Sends a user turn and streams the reply. Returns a `StreamResult` that is both:
 
 - **awaitable** → resolves to the assistant reply (rejects on error), and
 - **async-iterable** → yields `AgentEvent`s.
 
-### `agent.on(event, handler)`
+### `conversation.on(event, handler)`
 
 Subscribe to `"text"`, `"tool"`, `"message"`, `"error"`, or `"done"`. Returns an
 unsubscribe function.
 
 ```ts
-const off = agent.on("tool", (names) => console.log("running", names))
+const off = conversation.on("tool", (names) => console.log("running", names))
 off() // stop listening
 ```
 
-### `agent.messages` / `agent.reset()`
+### `conversation.messages` / `conversation.reset()`
 
-Read the history, or clear it to start a fresh conversation.
+Read the history, or clear it to start fresh.
 
 ## Events
 

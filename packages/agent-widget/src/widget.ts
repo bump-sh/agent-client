@@ -1,12 +1,12 @@
-import { type AgentChat, defineAgentChat } from "./element.js"
-import type { AgentLike, ChatOptions } from "./types.js"
+import { type AgentWidget, defineAgentWidget } from "./element.js"
+import type { ConversationLike, WidgetOptions } from "./types.js"
 
-function resolveTarget(options: ChatOptions): HTMLElement {
+function resolveTarget(options: WidgetOptions): HTMLElement {
   // Modal/sidebar float over the page → always attach to <body>.
   if (options.mode && options.mode !== "inline") return document.body
   if (typeof options.target === "string") {
     const el = document.querySelector(options.target)
-    if (!el) throw new Error(`Chat: target "${options.target}" not found.`)
+    if (!el) throw new Error(`Widget: target "${options.target}" not found.`)
     return el as HTMLElement
   }
   return options.target ?? document.body
@@ -16,28 +16,28 @@ function resolveTarget(options: ChatOptions): HTMLElement {
  * Create and mount a chat widget in one line:
  *
  * ```ts
- * new Chat({ endpoint: "https://host/agent/chat" })
+ * new Widget({ endpoint: "https://host/agent" })
  * ```
  *
- * The instance is the handle: `open()`, `close()`, `toggle()`, `destroy()`, `agent`.
+ * The instance is the handle: `open()`, `close()`, `toggle()`, `destroy()`, `conversation`.
  */
-export class Chat {
-  #element: AgentChat
+export class Widget {
+  #element: AgentWidget
 
-  constructor(options: ChatOptions = {}) {
-    defineAgentChat()
-    const element = document.createElement("agent-chat") as AgentChat
+  constructor(options: WidgetOptions = {}) {
+    defineAgentWidget()
+    const element = document.createElement("agent-widget") as AgentWidget
     element.configure(options)
     resolveTarget(options).appendChild(element)
     this.#element = element
     if (options.open) element.open()
   }
 
-  get element(): AgentChat {
+  get element(): AgentWidget {
     return this.#element
   }
-  get agent(): AgentLike {
-    return this.#element.agent
+  get conversation(): ConversationLike {
+    return this.#element.conversation
   }
 
   open(): void {

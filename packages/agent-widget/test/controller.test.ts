@@ -1,9 +1,9 @@
-import type { AgentEvent } from "@bump-sh/agent-client"
+import type { AgentEvent } from "@bump-sh/agent-conversation"
 import { describe, expect, it } from "vitest"
 import { Controller } from "../src/controller.js"
-import type { AgentLike } from "../src/types.js"
+import type { ConversationLike } from "../src/types.js"
 
-function fakeAgent(events: AgentEvent[]): AgentLike {
+function fakeAgent(events: AgentEvent[]): ConversationLike {
   return {
     // eslint-disable-next-line require-yield
     async *send(): AsyncGenerator<AgentEvent> {

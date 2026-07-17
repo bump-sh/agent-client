@@ -1,33 +1,34 @@
-# @bump-sh/agent-ui
+# @bump-sh/agent-widget
 
 Embeddable, themeable chat widget for Bump.sh agents. A Web Component you drop in
 with 3 lines — fully isolated (Shadow DOM), fully customizable.
 
-- **3-line path** — `new Chat({ endpoint })` and you have a chat box.
+- **3-line path** — `new Widget({ endpoint })` and you have a chat box.
 - **3 display modes** — `modal` (default), `sidebar`, `inline`.
 - **Isolated** — Shadow DOM: the host page's CSS can't leak in, and vice versa.
 - **Customizable** — CSS tokens, `::part()`, slots, and options.
-- **BYO agent** — pass your own [`@bump-sh/agent-client`](../agent-client) `Agent`.
+- **BYO conversation** — pass your own
+  [`@bump-sh/agent-conversation`](../agent-conversation) `Conversation`.
 
 ## Install
 
 ```sh
-npm install @bump-sh/agent-ui
+npm install @bump-sh/agent-widget
 ```
 
 ## Quickstart
 
 ```ts
-import { Chat } from "@bump-sh/agent-ui"
+import { Widget } from "@bump-sh/agent-widget"
 
-new Chat({ endpoint: "https://your-host/demo/weather/agent" })
+new Widget({ endpoint: "https://your-host/demo/weather/agent" })
 ```
 
 That mounts a floating launcher + modal. Or declaratively:
 
 ```html
-<agent-chat endpoint="https://…/agent" mode="sidebar"></agent-chat>
-<script type="module" src="https://unpkg.com/@bump-sh/agent-ui"></script>
+<agent-widget endpoint="https://…/agent" mode="sidebar"></agent-widget>
+<script type="module" src="https://unpkg.com/@bump-sh/agent-widget"></script>
 ```
 
 ## Local demo
@@ -35,22 +36,22 @@ That mounts a floating launcher + modal. Or declaratively:
 Build a self-contained bundle and open the page — no server needed:
 
 ```sh
-npm run example                 # writes examples/agent-ui.js
+npm run example                 # writes examples/agent-widget.js
 open examples/index.html        # set an endpoint, try the three modes
 ```
 
 ## Options
 
 ```ts
-const chat = new Chat({
-  endpoint,                         // OR agent: myAgent  (bring your own)
+const widget = new Widget({
+  endpoint,                         // OR conversation: myConversation  (bring your own)
   token,                            // auth: string | () => string | Promise<string>
   headers,                          // extra request headers (config, not auth)
   mode: "modal",                    // "modal" | "sidebar" | "inline"
   launcher: true,                   // floating launcher button (modal/sidebar); false to open it yourself
   target: "#app",                   // inline container; modal/sidebar → <body>
   open: false,                      // start opened
-  theme: { accent: "#4f7cff" },     // → CSS custom properties
+  theme: { accent: "#0a0a0a" },     // → CSS custom properties
   title: "Assistant",
   subtitle: "AI Agent",             // small line under the title
   placeholder: "Ask anything…",
@@ -60,8 +61,8 @@ const chat = new Chat({
   renderMarkdown: (text) => "…",    // replace the built-in safe renderer
 })
 
-chat.open(); chat.close(); chat.toggle(); chat.destroy()
-chat.agent // the underlying Agent
+widget.open(); widget.close(); widget.toggle(); widget.destroy()
+widget.conversation // the underlying Conversation
 ```
 
 ### Authentication
@@ -71,7 +72,7 @@ Use a callback for short-lived tokens; it's re-evaluated on every request, so
 the token refreshes without remounting the widget:
 
 ```ts
-new Chat({
+new Widget({
   endpoint,
   token: async () => (await fetch("/agent-token")).text(),
 })
@@ -96,20 +97,20 @@ Always pair the parser with a sanitizer — do not trust model output:
 import { marked } from "marked"
 import DOMPurify from "dompurify"
 
-new Chat({
+new Widget({
   endpoint,
   renderMarkdown: (text) => DOMPurify.sanitize(marked.parse(text) as string),
 })
 ```
 
-## Bring your own agent
+## Bring your own conversation
 
 ```ts
-import { Agent } from "@bump-sh/agent-client"
-import { Chat } from "@bump-sh/agent-ui"
+import { Conversation } from "@bump-sh/agent-conversation"
+import { Widget } from "@bump-sh/agent-widget"
 
-const agent = new Agent({ endpoint: "https://…/agent", token: "…" })
-new Chat({ agent })
+const conversation = new Conversation({ endpoint: "https://…/agent", token: "…" })
+new Widget({ conversation })
 ```
 
 ## Theming
@@ -117,7 +118,7 @@ new Chat({ agent })
 Set CSS custom properties — they pierce the Shadow DOM:
 
 ```css
-agent-chat {
+agent-widget {
   --agent-accent: #e11d48;
   --agent-font: "Inter", sans-serif;
   --agent-radius: 12px;
@@ -132,8 +133,8 @@ Tokens: `--agent-accent`, `--agent-bg`, `--agent-text`, `--agent-muted`,
 Style internal structure with `::part()`:
 
 ```css
-agent-chat::part(send) { border-radius: 6px; }
-agent-chat::part(message-user) { background: #eef; }
+agent-widget::part(send) { border-radius: 6px; }
+agent-widget::part(message-user) { background: #eef; }
 ```
 
 Parts: `launcher`, `panel`, `header`, `title`, `subtitle`, `close`, `thread`,

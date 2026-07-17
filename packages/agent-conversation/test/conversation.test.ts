@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest"
-import { Agent } from "../src/agent.js"
+import { Conversation } from "../src/conversation.js"
 import type { AgentEvent, Message } from "../src/types.js"
 
 /** A fake `fetch` that streams the given NDJSON lines back as the response body. */
@@ -8,9 +8,9 @@ function fetchReturning(lines: string[]): typeof fetch {
   return vi.fn(async () => new Response(body)) as unknown as typeof fetch
 }
 
-describe("Agent", () => {
+describe("Conversation", () => {
   it("accumulates text and resolves to the final reply", async () => {
-    const agent = new Agent({
+    const agent = new Conversation({
       endpoint: "/chat",
       fetch: fetchReturning([
         '{"type":"text","content":"Hello "}\n',
@@ -29,7 +29,7 @@ describe("Agent", () => {
   })
 
   it("records the user turn synchronously, before the stream is consumed", () => {
-    const agent = new Agent({ endpoint: "/chat", fetch: fetchReturning([]) })
+    const agent = new Conversation({ endpoint: "/chat", fetch: fetchReturning([]) })
 
     agent.send("hi") // not awaited / not iterated
 
@@ -37,7 +37,7 @@ describe("Agent", () => {
   })
 
   it("exposes messages as a copy, not the internal array", () => {
-    const agent = new Agent({ endpoint: "/chat", fetch: fetchReturning([]) })
+    const agent = new Conversation({ endpoint: "/chat", fetch: fetchReturning([]) })
     agent.send("hi")
 
     const snapshot = agent.messages as Message[]
@@ -48,7 +48,7 @@ describe("Agent", () => {
 
   it("replays history on the next turn", async () => {
     const fetchImpl = fetchReturning(['{"type":"text","content":"ok"}\n'])
-    const agent = new Agent({ endpoint: "/chat", fetch: fetchImpl })
+    const agent = new Conversation({ endpoint: "/chat", fetch: fetchImpl })
 
     await agent.send("first")
     await agent.send("second")
@@ -64,7 +64,7 @@ describe("Agent", () => {
   })
 
   it("surfaces text and tool events to callbacks", async () => {
-    const agent = new Agent({
+    const agent = new Conversation({
       endpoint: "/chat",
       fetch: fetchReturning([
         '{"type":"tool","names":["get_weather"]}\n',
@@ -84,7 +84,7 @@ describe("Agent", () => {
   })
 
   it("yields events when iterated", async () => {
-    const agent = new Agent({
+    const agent = new Conversation({
       endpoint: "/chat",
       fetch: fetchReturning(['{"type":"text","content":"Hi"}\n', '{"type":"done"}\n']),
     })
@@ -96,7 +96,7 @@ describe("Agent", () => {
   })
 
   it("rejects and emits on a server error event", async () => {
-    const agent = new Agent({
+    const agent = new Conversation({
       endpoint: "/chat",
       fetch: fetchReturning(['{"type":"error","content":"boom"}\n']),
     })
@@ -108,7 +108,7 @@ describe("Agent", () => {
   })
 
   it("rejects when the request fails", async () => {
-    const agent = new Agent({
+    const agent = new Conversation({
       endpoint: "/chat",
       fetch: vi.fn(
         async () => new Response("nope", { status: 500 }),
@@ -119,7 +119,7 @@ describe("Agent", () => {
   })
 
   it("reset() clears history", async () => {
-    const agent = new Agent({
+    const agent = new Conversation({
       endpoint: "/chat",
       fetch: fetchReturning(['{"type":"text","content":"ok"}\n', '{"type":"done"}\n']),
     })
@@ -132,7 +132,11 @@ describe("Agent", () => {
 
   it("sends a string token as an Authorization bearer header", async () => {
     const fetchImpl = fetchReturning(['{"type":"done"}\n'])
-    const agent = new Agent({ endpoint: "/chat", fetch: fetchImpl, token: "t0ken" })
+    const agent = new Conversation({
+      endpoint: "/chat",
+      fetch: fetchImpl,
+      token: "t0ken",
+    })
 
     await agent.send("hi")
 
@@ -143,7 +147,7 @@ describe("Agent", () => {
   it("re-evaluates a token callback on every request so it can refresh", async () => {
     const fetchImpl = fetchReturning(['{"type":"done"}\n'])
     let n = 0
-    const agent = new Agent({
+    const agent = new Conversation({
       endpoint: "/chat",
       fetch: fetchImpl,
       token: async () => `t${++n}`,
@@ -159,7 +163,7 @@ describe("Agent", () => {
 
   it("omits Authorization when no token is given", async () => {
     const fetchImpl = fetchReturning(['{"type":"done"}\n'])
-    const agent = new Agent({ endpoint: "/chat", fetch: fetchImpl })
+    const agent = new Conversation({ endpoint: "/chat", fetch: fetchImpl })
 
     await agent.send("hi")
 
@@ -169,7 +173,7 @@ describe("Agent", () => {
 
   it("forwards the abort signal to fetch", async () => {
     const fetchImpl = fetchReturning(['{"type":"done"}\n'])
-    const agent = new Agent({ endpoint: "/chat", fetch: fetchImpl })
+    const agent = new Conversation({ endpoint: "/chat", fetch: fetchImpl })
     const controller = new AbortController()
 
     await agent.send("hi", { signal: controller.signal })

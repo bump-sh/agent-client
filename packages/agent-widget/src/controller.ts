@@ -1,4 +1,4 @@
-import type { AgentLike } from "./types.js"
+import type { ConversationLike } from "./types.js"
 
 const escapeHtml = (s: string): string =>
   s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
@@ -14,12 +14,16 @@ export interface ControllerOptions {
 /** Drives one thread element: appends turns and streams assistant replies into it. */
 export class Controller {
   #thread: HTMLElement
-  #agent: () => AgentLike
+  #conversation: () => ConversationLike
   #options: ControllerOptions
 
-  constructor(thread: HTMLElement, agent: () => AgentLike, options: ControllerOptions) {
+  constructor(
+    thread: HTMLElement,
+    conversation: () => ConversationLike,
+    options: ControllerOptions,
+  ) {
     this.#thread = thread
-    this.#agent = agent
+    this.#conversation = conversation
     this.#options = options
   }
 
@@ -46,7 +50,7 @@ export class Controller {
     paint()
 
     try {
-      for await (const event of this.#agent().send(content)) {
+      for await (const event of this.#conversation().send(content)) {
         if (event.type === "text") {
           liveTool = ""
           acc += event.delta

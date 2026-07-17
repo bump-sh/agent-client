@@ -7,6 +7,6 @@ export default defineConfig({
   clean: true,
   sourcemap: true,
   target: "es2022",
-  // @bump-sh/agent-client stays external in the published build (a dependency);
+  // @bump-sh/agent-conversation stays external in the published build (a dependency);
   // the Bump.sh vendor script bundles everything separately with esbuild --bundle.
 })

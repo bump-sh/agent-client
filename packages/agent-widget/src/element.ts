@@ -1,9 +1,9 @@
-import { Agent } from "@bump-sh/agent-client"
-import type { TokenProvider } from "@bump-sh/agent-client"
+import { Conversation } from "@bump-sh/agent-conversation"
+import type { TokenProvider } from "@bump-sh/agent-conversation"
 import { Controller } from "./controller.js"
 import { renderMarkdown as defaultMarkdown } from "./markdown.js"
 import { css } from "./styles.js"
-import type { AgentLike, Labels, Mode, Theme } from "./types.js"
+import type { ConversationLike, Labels, Mode, Theme } from "./types.js"
 
 const THEME_VARS: Record<keyof Theme, string> = {
   accent: "--agent-accent",
@@ -49,8 +49,8 @@ function applyStyles(shadow: ShadowRoot): void {
   shadow.insertBefore(style, shadow.firstChild)
 }
 
-/** The `<agent-chat>` custom element. Prefer the `Chat` façade for the 5-min path. */
-export class AgentChat extends HTMLElement {
+/** The `<agent-widget>` custom element. Prefer the `Widget` façade for the 5-min path. */
+export class AgentWidget extends HTMLElement {
   static observedAttributes = [
     "endpoint",
     "mode",
@@ -60,8 +60,8 @@ export class AgentChat extends HTMLElement {
     "placeholder",
   ]
 
-  #providedAgent?: AgentLike
-  #agentInstance?: AgentLike
+  #providedConversation?: ConversationLike
+  #conversationInstance?: ConversationLike
   #endpoint?: string
   #token?: TokenProvider
   #headers: Record<string, string> = {}
@@ -88,9 +88,9 @@ export class AgentChat extends HTMLElement {
     this.attachShadow({ mode: "open" })
   }
 
-  /** Apply options from the `Chat` façade. Call before the element is attached. */
+  /** Apply options from the `Widget` façade. Call before the element is attached. */
   configure(options: {
-    agent?: AgentLike
+    conversation?: ConversationLike
     endpoint?: string
     token?: TokenProvider
     headers?: Record<string, string>
@@ -106,7 +106,7 @@ export class AgentChat extends HTMLElement {
     theme?: Theme
     renderMarkdown?: (text: string) => string
   }): this {
-    if (options.agent) this.#providedAgent = options.agent
+    if (options.conversation) this.#providedConversation = options.conversation
     if (options.endpoint) this.setAttribute("endpoint", options.endpoint)
     if (options.token != null) this.#token = options.token
     if (options.headers) this.#headers = options.headers
@@ -132,19 +132,19 @@ export class AgentChat extends HTMLElement {
     }
   }
 
-  /** The agent instance in use — provided, or built lazily from `endpoint`. */
-  get agent(): AgentLike {
-    if (this.#providedAgent) return this.#providedAgent
-    if (!this.#agentInstance) {
+  /** The conversation in use — provided, or built lazily from `endpoint`. */
+  get conversation(): ConversationLike {
+    if (this.#providedConversation) return this.#providedConversation
+    if (!this.#conversationInstance) {
       if (!this.#endpoint)
-        throw new Error("agent-chat: set `endpoint` or provide an `agent`.")
-      this.#agentInstance = new Agent({
+        throw new Error("agent-widget: set `endpoint` or provide a `conversation`.")
+      this.#conversationInstance = new Conversation({
         endpoint: this.#endpoint,
         token: this.#token,
         headers: this.#headers,
       })
     }
-    return this.#agentInstance
+    return this.#conversationInstance
   }
 
   open(): void {
@@ -171,7 +171,7 @@ export class AgentChat extends HTMLElement {
   ): void {
     if (name === "endpoint") {
       this.#endpoint = value ?? undefined
-      this.#agentInstance = undefined
+      this.#conversationInstance = undefined
     } else if (name === "mode") {
       if (value) this.#mode = value as Mode
       if (this.#built) this.#build()
@@ -208,11 +208,15 @@ export class AgentChat extends HTMLElement {
     applyStyles(shadow)
     this.#grabRefs()
     this.#wire()
-    this.#controller = new Controller(this.#thread as HTMLElement, () => this.agent, {
-      render: this.#render,
-      avatar: this.#avatarHtml(),
-      todayLabel: this.#labels.today ?? "Today",
-    })
+    this.#controller = new Controller(
+      this.#thread as HTMLElement,
+      () => this.conversation,
+      {
+        render: this.#render,
+        avatar: this.#avatarHtml(),
+        todayLabel: this.#labels.today ?? "Today",
+      },
+    )
     this.#built = true
     if (this.#greeting) this.#controller.greet(this.#greeting)
   }
@@ -343,8 +347,8 @@ export class AgentChat extends HTMLElement {
   }
 }
 
-/** Register the `<agent-chat>` element (idempotent, no-op outside the browser). */
-export function defineAgentChat(tag = "agent-chat"): void {
+/** Register the `<agent-widget>` element (idempotent, no-op outside the browser). */
+export function defineAgentWidget(tag = "agent-widget"): void {
   if (typeof customElements === "undefined") return
-  if (!customElements.get(tag)) customElements.define(tag, AgentChat)
+  if (!customElements.get(tag)) customElements.define(tag, AgentWidget)
 }

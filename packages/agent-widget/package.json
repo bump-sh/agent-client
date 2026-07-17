@@ -1,5 +1,5 @@
 {
-  "name": "@bump-sh/agent-ui",
+  "name": "@bump-sh/agent-widget",
   "version": "0.1.0",
   "description": "Embeddable, themeable chat widget for Bump.sh agents — a Web Component you drop in with 3 lines.",
   "type": "module",
@@ -24,11 +24,11 @@
     "test:watch": "vitest",
     "check": "biome check src test",
     "format": "biome format --write src test",
-    "example": "esbuild src/index.ts --bundle --format=iife --global-name=AgentUI --target=es2022 --outfile=examples/agent-ui.js",
+    "example": "esbuild src/index.ts --bundle --format=iife --global-name=AgentWidget --target=es2022 --outfile=examples/agent-widget.js",
     "prepublishOnly": "npm run build"
   },
   "keywords": ["bump.sh", "agent", "chat", "widget", "web-component", "ui"],
   "dependencies": {
-    "@bump-sh/agent-client": "^0.1.0"
+    "@bump-sh/agent-conversation": "^0.1.0"
   }
 }

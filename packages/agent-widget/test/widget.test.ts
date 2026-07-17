@@ -1,9 +1,9 @@
-import type { AgentEvent } from "@bump-sh/agent-client"
+import type { AgentEvent } from "@bump-sh/agent-conversation"
 import { describe, expect, it, vi } from "vitest"
-import { Chat } from "../src/index.js"
-import type { AgentLike } from "../src/types.js"
+import { Widget } from "../src/index.js"
+import type { ConversationLike } from "../src/types.js"
 
-function fakeAgent(): AgentLike {
+function fakeConversation(): ConversationLike {
   return {
     async *send(): AsyncGenerator<AgentEvent> {
       yield { type: "text", delta: "Hello" }
@@ -11,49 +11,60 @@ function fakeAgent(): AgentLike {
   }
 }
 
-describe("Chat", () => {
-  it("mounts an <agent-chat> element and exposes a handle", () => {
-    const chat = new Chat({ agent: fakeAgent() })
+describe("Widget", () => {
+  it("mounts an <agent-widget> element and exposes a handle", () => {
+    const chat = new Widget({ conversation: fakeConversation() })
 
-    const element = document.querySelector("agent-chat")
+    const element = document.querySelector("agent-widget")
     expect(element).not.toBeNull()
     expect(chat.element).toBe(element)
 
     chat.destroy()
-    expect(document.querySelector("agent-chat")).toBeNull()
+    expect(document.querySelector("agent-widget")).toBeNull()
   })
 
-  it("uses a provided agent instead of building one from endpoint", () => {
-    const agent = fakeAgent()
-    const chat = new Chat({ agent })
-    expect(chat.agent).toBe(agent)
+  it("uses a provided conversation instead of building one from endpoint", () => {
+    const conversation = fakeConversation()
+    const chat = new Widget({ conversation })
+    expect(chat.conversation).toBe(conversation)
     chat.destroy()
   })
 
   it("applies theme tokens as --agent-* custom properties", () => {
-    const chat = new Chat({ agent: fakeAgent(), theme: { accent: "#e11d48" } })
+    const chat = new Widget({
+      conversation: fakeConversation(),
+      theme: { accent: "#e11d48" },
+    })
     expect(chat.element.style.getPropertyValue("--agent-accent")).toBe("#e11d48")
     chat.destroy()
   })
 
   it("reflects the display mode as an attribute", () => {
-    const chat = new Chat({ agent: fakeAgent(), mode: "sidebar" })
+    const chat = new Widget({ conversation: fakeConversation(), mode: "sidebar" })
     expect(chat.element.getAttribute("mode")).toBe("sidebar")
     chat.destroy()
   })
 
   it("renders the launcher by default but omits it when launcher is false", () => {
-    const shown = new Chat({ agent: fakeAgent(), mode: "modal" })
+    const shown = new Widget({ conversation: fakeConversation(), mode: "modal" })
     expect(shown.element.shadowRoot?.querySelector(".launcher")).not.toBeNull()
     shown.destroy()
 
-    const hidden = new Chat({ agent: fakeAgent(), mode: "modal", launcher: false })
+    const hidden = new Widget({
+      conversation: fakeConversation(),
+      mode: "modal",
+      launcher: false,
+    })
     expect(hidden.element.shadowRoot?.querySelector(".launcher")).toBeNull()
     hidden.destroy()
   })
 
   it("dismisses on an outside click but not on clicks inside the panel", () => {
-    const chat = new Chat({ agent: fakeAgent(), mode: "sidebar", open: true })
+    const chat = new Widget({
+      conversation: fakeConversation(),
+      mode: "sidebar",
+      open: true,
+    })
     const shadow = chat.element.shadowRoot as ShadowRoot
     const panel = shadow.querySelector(".panel") as HTMLElement
     const input = shadow.querySelector(".input") as HTMLElement
@@ -67,12 +78,12 @@ describe("Chat", () => {
     chat.destroy()
   })
 
-  it("forwards a token to the built-in agent as an Authorization header", async () => {
+  it("forwards a token to the built-in conversation as an Authorization header", async () => {
     const fetchMock = vi.fn(async () => new Response('{"type":"done"}\n'))
     vi.stubGlobal("fetch", fetchMock)
 
-    const chat = new Chat({ endpoint: "/chat", token: "s3cret" })
-    for await (const _event of chat.agent.send("hi")) {
+    const chat = new Widget({ endpoint: "/chat", token: "s3cret" })
+    for await (const _event of chat.conversation.send("hi")) {
       // drain the stream so the request actually fires
     }
 
@@ -83,7 +94,7 @@ describe("Chat", () => {
   })
 
   it("streams a reply into the thread when a message is sent", async () => {
-    const chat = new Chat({ agent: fakeAgent(), mode: "inline" })
+    const chat = new Widget({ conversation: fakeConversation(), mode: "inline" })
     const shadow = chat.element.shadowRoot as ShadowRoot
     const input = shadow.querySelector(".input") as HTMLTextAreaElement
     const form = shadow.querySelector(".composer") as HTMLFormElement

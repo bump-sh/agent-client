@@ -1,5 +1,5 @@
 {
-  "name": "@bump-sh/agent-client",
+  "name": "@bump-sh/agent-conversation",
   "version": "0.1.0",
   "description": "Tiny, dependency-free client for streaming conversations with a Bump.sh agent endpoint.",
   "type": "module",

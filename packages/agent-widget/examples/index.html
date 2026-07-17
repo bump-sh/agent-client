@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>agent-ui — demo</title>
+    <title>agent-widget — demo</title>
     <style>
       :root {
         --accent: #0a0a0a;
@@ -90,7 +90,7 @@
   </head>
   <body>
     <main class="panel">
-      <h1>agent-ui</h1>
+      <h1>agent-widget</h1>
       <p class="sub">Point it at a running agent endpoint and try the three modes.</p>
       <label>
         Endpoint
@@ -111,7 +111,7 @@
     <div id="stage"></div>
 
     <!-- Classic script (not a module) so it loads over file:// too. Build: npm run example -->
-    <script src="./agent-ui.js"></script>
+    <script src="./agent-widget.js"></script>
     <script>
       let chat;
       const value = (id) => document.getElementById(id).value.trim();
@@ -120,7 +120,7 @@
         button.addEventListener("click", () => {
           chat?.destroy();
           const mode = button.dataset.mode;
-          chat = new AgentUI.Chat({
+          chat = new AgentWidget.Widget({
             endpoint: value("endpoint"),
             token: value("token") || undefined,
             mode,

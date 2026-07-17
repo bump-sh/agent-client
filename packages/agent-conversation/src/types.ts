@@ -14,7 +14,7 @@ export type AgentEvent =
 /** A bearer token, or a callback re-evaluated per request (for short-lived tokens). */
 export type TokenProvider = string | (() => string | Promise<string>)
 
-export interface AgentOptions {
+export interface ConversationOptions {
   /** The agent chat endpoint URL to POST conversations to. */
   endpoint: string
   /**

@@ -1,9 +1,9 @@
-import type { AgentEvent, TokenProvider } from "@bump-sh/agent-client"
+import type { AgentEvent, TokenProvider } from "@bump-sh/agent-conversation"
 
 export type Mode = "modal" | "sidebar" | "inline"
 
-/** The minimal shape the widget needs from an agent. `Agent` satisfies it. */
-export interface AgentLike {
+/** The minimal shape the widget needs from a conversation. `Conversation` satisfies it. */
+export interface ConversationLike {
   send(content: string): AsyncIterable<AgentEvent>
 }
 
@@ -32,18 +32,18 @@ export interface Labels {
   today?: string
 }
 
-export interface ChatOptions {
-  /** Agent chat endpoint. Used to build an Agent when `agent` is not given. */
+export interface WidgetOptions {
+  /** Endpoint to POST the conversation to. Builds a Conversation when `conversation` is not given. */
   endpoint?: string
-  /** Bring your own agent instance instead of building one from `endpoint`. */
-  agent?: AgentLike
+  /** Bring your own conversation instead of building one from `endpoint`. */
+  conversation?: ConversationLike
   /**
-   * Bearer token for the built-in Agent, sent as `Authorization`. String, or a
+   * Bearer token for the built-in Conversation, sent as `Authorization`. String, or a
    * callback re-evaluated per request so short-lived tokens refresh. This is the
    * recommended way to authenticate — mint a user-scoped token server-side.
    */
   token?: TokenProvider
-  /** Extra request headers for the built-in Agent (config, not auth — prefer `token`). */
+  /** Extra request headers for the built-in Conversation (config, not auth — prefer `token`). */
   headers?: Record<string, string>
   /** Display mode. Defaults to "modal". */
   mode?: Mode

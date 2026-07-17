@@ -1,7 +1,7 @@
-export { Agent, StreamResult } from "./agent.js"
+export { Conversation, StreamResult } from "./conversation.js"
 export type {
   AgentEvent,
-  AgentOptions,
+  ConversationOptions,
   Message,
   Role,
   SendOptions,
