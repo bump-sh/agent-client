@@ -116,6 +116,21 @@
       let widget;
       const value = (id) => document.getElementById(id).value.trim();
 
+      // Remember both fields across reloads.
+      for (const id of ["endpoint", "token"]) {
+        const field = document.getElementById(id);
+        const saved = localStorage.getItem(`agent-widget-demo.${id}`);
+        if (saved) field.value = saved;
+        field.addEventListener("input", () =>
+          localStorage.setItem(`agent-widget-demo.${id}`, field.value),
+        );
+      }
+
+      // Keep the open widget pointed at the field's URL; edits apply to the next message.
+      document.getElementById("endpoint").addEventListener("input", () => {
+        widget?.element.setAttribute("endpoint", value("endpoint"));
+      });
+
       for (const button of document.querySelectorAll("[data-mode]")) {
         button.addEventListener("click", () => {
           widget?.destroy();
