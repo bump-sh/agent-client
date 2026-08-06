@@ -71,6 +71,8 @@ export interface WidgetOptions {
   greeting?: string
   /** Assistant avatar: an image URL, or inline HTML/emoji. Defaults to a glyph. */
   avatar?: string
+  /** Launcher button icon: an image URL, or inline HTML/emoji. Defaults to an AI sparkle. */
+  launcherIcon?: string
   /** Disclaimer under the composer. Pass "" to hide. */
   disclaimer?: string
   labels?: Labels

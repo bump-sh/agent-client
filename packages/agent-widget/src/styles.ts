@@ -36,11 +36,13 @@ export const css = `
   width: 56px; height: 56px; border: 0; border-radius: 50%; cursor: pointer;
   background: var(--agent-accent); color: #fff;
   display: flex; align-items: center; justify-content: center;
+  font-size: 24px; overflow: hidden;
   box-shadow: 0 6px 24px rgba(0, 0, 0, .18);
   transition: transform .15s ease;
 }
 .launcher:hover { transform: translateY(-2px); }
 .launcher svg { width: 26px; height: 26px; }
+.launcher img { width: 100%; height: 100%; object-fit: cover; }
 :host([mode="inline"]) .launcher { display: none; }
 :host([open]) .launcher { display: none; }
 

@@ -20,7 +20,7 @@ const THEME_VARS: Record<keyof Theme, string> = {
 }
 
 const SEND_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>`
-const CHAT_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-8.5 8.5 8.5 8.5 0 0 1-3.8-.9L3 21l1.9-5.7a8.5 8.5 0 0 1-.9-3.8A8.4 8.4 0 0 1 11.5 3a8.5 8.5 0 0 1 9.5 8.5z"/></svg>`
+const LAUNCHER_ICON = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M10.5 5.5l1.6 4.3a3.4 3.4 0 0 0 2.1 2.1l4.3 1.6-4.3 1.6a3.4 3.4 0 0 0-2.1 2.1l-1.6 4.3-1.6-4.3a3.4 3.4 0 0 0-2.1-2.1l-4.3-1.6 4.3-1.6a3.4 3.4 0 0 0 2.1-2.1z"/><path d="M18.5 2l.6 1.6a1.3 1.3 0 0 0 .8.8l1.6.6-1.6.6a1.3 1.3 0 0 0-.8.8l-.6 1.6-.6-1.6a1.3 1.3 0 0 0-.8-.8l-1.6-.6 1.6-.6a1.3 1.3 0 0 0 .8-.8z"/></svg>`
 const CLOSE_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>`
 const AVATAR_ICON = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5l1.9 5.1a4 4 0 0 0 2.5 2.5L21.5 12l-5.1 1.9a4 4 0 0 0-2.5 2.5L12 21.5l-1.9-5.1a4 4 0 0 0-2.5-2.5L2.5 12l5.1-1.9a4 4 0 0 0 2.5-2.5z"/></svg>`
 const DEFAULT_DISCLAIMER = "AI can make mistakes. Always review before you act."
@@ -28,6 +28,13 @@ const DEFAULT_DISCLAIMER = "AI can make mistakes. Always review before you act."
 const escapeHtml = (s: string): string =>
   s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
 const attr = (s: string): string => escapeHtml(s).replace(/"/g, "&quot;")
+
+/** An icon option: an image URL becomes an <img>, anything else is inline HTML/emoji. */
+const iconHtml = (value: string | undefined, fallback: string): string => {
+  if (!value) return fallback
+  if (/^(https?:|\/|\.|data:)/.test(value)) return `<img src="${attr(value)}" alt="">`
+  return value
+}
 
 let sheet: CSSStyleSheet | undefined
 const supportsAdopted = (): boolean =>
@@ -73,6 +80,7 @@ export class AgentWidget extends HTMLElement {
   #placeholderText = "Ask anything…"
   #greeting?: string
   #avatar?: string
+  #launcherIcon?: string
   #disclaimerText = DEFAULT_DISCLAIMER
   #labels: Labels = {}
   #render: (text: string) => string = defaultMarkdown
@@ -103,6 +111,7 @@ export class AgentWidget extends HTMLElement {
     placeholder?: string
     greeting?: string
     avatar?: string
+    launcherIcon?: string
     disclaimer?: string
     labels?: Labels
     theme?: Theme
@@ -121,6 +130,7 @@ export class AgentWidget extends HTMLElement {
       this.setAttribute("placeholder", options.placeholder)
     if (options.greeting != null) this.#greeting = options.greeting
     if (options.avatar != null) this.#avatar = options.avatar
+    if (options.launcherIcon != null) this.#launcherIcon = options.launcherIcon
     if (options.disclaimer != null) this.#disclaimerText = options.disclaimer
     if (options.labels) this.#labels = options.labels
     if (options.renderMarkdown) this.#render = options.renderMarkdown
@@ -226,10 +236,7 @@ export class AgentWidget extends HTMLElement {
   }
 
   #avatarHtml(): string {
-    if (!this.#avatar) return AVATAR_ICON
-    if (/^(https?:|\/|\.|data:)/.test(this.#avatar))
-      return `<img src="${attr(this.#avatar)}" alt="">`
-    return this.#avatar
+    return iconHtml(this.#avatar, AVATAR_ICON)
   }
 
   #template(): string {
@@ -238,7 +245,7 @@ export class AgentWidget extends HTMLElement {
     const launcher =
       this.#mode === "inline" || !this.#showLauncher
         ? ""
-        : `<button class="launcher" part="launcher" aria-label="${attr(this.#labels.launch ?? "Open chat")}">${CHAT_ICON}</button>`
+        : `<button class="launcher" part="launcher" aria-label="${attr(this.#labels.launch ?? "Open chat")}">${iconHtml(this.#launcherIcon, LAUNCHER_ICON)}</button>`
     const subtitle = this.#subtitleText
       ? `<span class="subtitle" part="subtitle">${escapeHtml(this.#subtitleText)}</span>`
       : ""

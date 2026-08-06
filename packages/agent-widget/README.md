@@ -65,6 +65,8 @@ const widget = new Widget({
   placeholder: "Ask anything…",
   greeting: "Hi! How can I help?",  // optional first assistant message (visual only, not sent to the agent)
   avatar: "https://…/logo.png",     // image URL or inline emoji/HTML
+  launcherIcon: "✨",               // launcher button icon: image URL or inline emoji/HTML
+                                    // (defaults to an AI sparkle)
   disclaimer: "AI can make mistakes…", // footer under the composer ("" to hide)
   labels: { send: "Send", close: "Close", launch: "Open chat", today: "Today" },
                                     // a11y labels + the date divider — override to localize

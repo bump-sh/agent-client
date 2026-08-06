@@ -59,6 +59,29 @@ describe("Widget", () => {
     hidden.destroy()
   })
 
+  it("renders the default sparkle launcher icon, replaceable via launcherIcon", () => {
+    const sparkle = new Widget({ conversation: fakeConversation(), mode: "modal" })
+    expect(sparkle.element.shadowRoot?.querySelector(".launcher svg")).not.toBeNull()
+    sparkle.destroy()
+
+    const emoji = new Widget({
+      conversation: fakeConversation(),
+      mode: "modal",
+      launcherIcon: "🤖",
+    })
+    expect(emoji.element.shadowRoot?.querySelector(".launcher")?.textContent).toBe("🤖")
+    emoji.destroy()
+
+    const image = new Widget({
+      conversation: fakeConversation(),
+      mode: "modal",
+      launcherIcon: "https://example.com/bot.png",
+    })
+    const img = image.element.shadowRoot?.querySelector(".launcher img")
+    expect(img?.getAttribute("src")).toBe("https://example.com/bot.png")
+    image.destroy()
+  })
+
   it("dismisses on an outside click but not on clicks inside the panel", () => {
     const chat = new Widget({
       conversation: fakeConversation(),
