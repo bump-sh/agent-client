@@ -58,7 +58,15 @@ new Widget({ conversation: new Conversation({ endpoint, token }) })
 Pass a `token` (string, or a callback re-evaluated per request for short-lived
 tokens); it's sent as `Authorization: Bearer <token>`. Mint a user-scoped,
 short-lived token server-side — never ship a raw or tenant-wide key to the
-browser. Both packages accept it.
+browser. Both packages accept it, and the token is available in your workflow
+file as `$current_user.token`.
+
+## Agent configuration & custom headers
+
+Pass `config` to configure the agent — each key is sent as a `Config-<Key>`
+request header and is available in your workflow file as `$config.<key>` —
+and `headers` for any other custom header. Both packages accept a map, or a
+callback re-evaluated on every request.
 
 ## Local demo
 

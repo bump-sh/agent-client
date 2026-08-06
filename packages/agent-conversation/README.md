@@ -58,7 +58,8 @@ for await (const event of conversation.send("What's the weather in Paris?")) {
 | ---------- | --------------------------------------------- | ------------------------------------------------------------------ |
 | `endpoint` | `string` (required)                           | The agent endpoint URL to POST to.                                 |
 | `token`    | `string \| () => string \| Promise<string>`   | Bearer token → `Authorization`. A callback is re-evaluated per request, so short-lived tokens refresh. |
-| `headers`  | `Record<string, string>`                      | Extra request headers (config, not auth — prefer `token`).         |
+| `config`   | `Record<string, string>` or a callback        | Agent configuration keys, sent as `Config-<Key>` request headers.  |
+| `headers`  | `Record<string, string>` or a callback        | Extra request headers, merged last.                                |
 | `fetch`    | `typeof fetch`                                | Custom fetch (SSR, testing). Defaults to `fetch`.                  |
 | `messages` | `Message[]`                                   | Seed the conversation history.                                     |
 
@@ -76,7 +77,31 @@ new Conversation({
 
 The token travels in the browser, so **mint a user-scoped, short-lived token
 server-side** (a signed JWT your API verifies is ideal) — never ship a raw or
-tenant-wide API key to the page.
+tenant-wide API key to the page. In your workflow file, the token is available
+as `$current_user.token`.
+
+### Configuration & custom headers
+
+Pass `config` to configure the agent: each key is sent as a `Config-<Key>`
+request header and is available in your workflow file as `$config.<key>`
+(`config: { locale: "fr" }` → `$config.locale`). Use `headers` for any other
+extra header. Both take a map, or a callback re-evaluated on every request
+for values that change over time:
+
+```ts
+new Conversation({
+  endpoint,
+  config: { locale: "fr" },
+  headers: () => ({ "X-Request-Id": crypto.randomUUID() }),
+})
+```
+
+Key matching is case-insensitive and treats `-` and `_` as equivalent:
+`config: { "doc-id": "42" }` can be read as `$config.doc_id`. Prefer
+dash-separated keys — some proxies drop headers with underscores.
+
+Values travel as raw HTTP header values, so keep them ASCII (identifiers,
+locales, URLs) — encode anything richer yourself.
 
 ### `conversation.send(content, { signal? })`
 

@@ -1,5 +1,5 @@
 import { Conversation } from "@bump-sh/agent-conversation"
-import type { TokenProvider } from "@bump-sh/agent-conversation"
+import type { HeadersProvider, TokenProvider } from "@bump-sh/agent-conversation"
 import { Controller } from "./controller.js"
 import { renderMarkdown as defaultMarkdown } from "./markdown.js"
 import { css } from "./styles.js"
@@ -64,7 +64,8 @@ export class AgentWidget extends HTMLElement {
   #conversationInstance?: ConversationLike
   #endpoint?: string
   #token?: TokenProvider
-  #headers: Record<string, string> = {}
+  #config: HeadersProvider = {}
+  #headers: HeadersProvider = {}
   #mode: Mode = "modal"
   #showLauncher = true
   #titleText = "Assistant"
@@ -93,7 +94,8 @@ export class AgentWidget extends HTMLElement {
     conversation?: ConversationLike
     endpoint?: string
     token?: TokenProvider
-    headers?: Record<string, string>
+    config?: HeadersProvider
+    headers?: HeadersProvider
     mode?: Mode
     launcher?: boolean
     title?: string
@@ -109,6 +111,7 @@ export class AgentWidget extends HTMLElement {
     if (options.conversation) this.#providedConversation = options.conversation
     if (options.endpoint) this.setAttribute("endpoint", options.endpoint)
     if (options.token != null) this.#token = options.token
+    if (options.config) this.#config = options.config
     if (options.headers) this.#headers = options.headers
     this.setAttribute("mode", options.mode ?? this.#mode)
     if (options.launcher === false) this.#showLauncher = false
@@ -141,6 +144,7 @@ export class AgentWidget extends HTMLElement {
       this.#conversationInstance = new Conversation({
         endpoint: this.#endpoint,
         token: this.#token,
+        config: this.#config,
         headers: this.#headers,
       })
     }

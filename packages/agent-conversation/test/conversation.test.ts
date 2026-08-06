@@ -161,6 +161,56 @@ describe("Conversation", () => {
     expect(calls[1][1].headers.Authorization).toBe("Bearer t2")
   })
 
+  it("sends config keys as Config-* headers", async () => {
+    const fetchImpl = fetchReturning(['{"type":"done"}\n'])
+    const agent = new Conversation({
+      endpoint: "/chat",
+      fetch: fetchImpl,
+      config: { locale: "fr", "Doc-Id": "42" },
+    })
+
+    await agent.send("hi")
+
+    const init = (fetchImpl as ReturnType<typeof vi.fn>).mock.calls[0][1]
+    expect(init.headers["Config-locale"]).toBe("fr")
+    expect(init.headers["Config-Doc-Id"]).toBe("42")
+  })
+
+  it("re-evaluates a headers callback on every request", async () => {
+    const fetchImpl = fetchReturning(['{"type":"done"}\n'])
+    let n = 0
+    const agent = new Conversation({
+      endpoint: "/chat",
+      fetch: fetchImpl,
+      headers: () => ({ "X-Request-N": `${++n}` }),
+    })
+
+    await agent.send("first")
+    await agent.send("second")
+
+    const calls = (fetchImpl as ReturnType<typeof vi.fn>).mock.calls
+    expect(calls[0][1].headers["X-Request-N"]).toBe("1")
+    expect(calls[1][1].headers["X-Request-N"]).toBe("2")
+  })
+
+  it("re-evaluates a config callback on every request", async () => {
+    const fetchImpl = fetchReturning(['{"type":"done"}\n'])
+    let locale = "fr"
+    const agent = new Conversation({
+      endpoint: "/chat",
+      fetch: fetchImpl,
+      config: async () => ({ locale }),
+    })
+
+    await agent.send("first")
+    locale = "en"
+    await agent.send("second")
+
+    const calls = (fetchImpl as ReturnType<typeof vi.fn>).mock.calls
+    expect(calls[0][1].headers["Config-locale"]).toBe("fr")
+    expect(calls[1][1].headers["Config-locale"]).toBe("en")
+  })
+
   it("omits Authorization when no token is given", async () => {
     const fetchImpl = fetchReturning(['{"type":"done"}\n'])
     const agent = new Conversation({ endpoint: "/chat", fetch: fetchImpl })

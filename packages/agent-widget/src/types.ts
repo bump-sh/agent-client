@@ -1,4 +1,8 @@
-import type { AgentEvent, TokenProvider } from "@bump-sh/agent-conversation"
+import type {
+  AgentEvent,
+  HeadersProvider,
+  TokenProvider,
+} from "@bump-sh/agent-conversation"
 
 export type Mode = "modal" | "sidebar" | "inline"
 
@@ -43,8 +47,13 @@ export interface WidgetOptions {
    * recommended way to authenticate — mint a user-scoped token server-side.
    */
   token?: TokenProvider
-  /** Extra request headers for the built-in Conversation (config, not auth — prefer `token`). */
-  headers?: Record<string, string>
+  /**
+   * Agent configuration keys for the built-in Conversation, sent as `Config-<Key>`
+   * request headers. Map, or a callback re-evaluated on every request.
+   */
+  config?: HeadersProvider
+  /** Extra request headers for the built-in Conversation. Map, or a per-request callback. */
+  headers?: HeadersProvider
   /** Display mode. Defaults to "modal". */
   mode?: Mode
   /** Show the floating launcher button (modal/sidebar). Default true. */

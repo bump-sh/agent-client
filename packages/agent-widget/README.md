@@ -46,7 +46,8 @@ open examples/index.html        # set an endpoint, try the three modes
 const widget = new Widget({
   endpoint,                         // OR conversation: myConversation  (bring your own)
   token,                            // auth: string | () => string | Promise<string>
-  headers,                          // extra request headers (config, not auth)
+  config,                           // agent config → Config-<Key> headers (map or per-request callback)
+  headers,                          // extra request headers (map or per-request callback)
   mode: "modal",                    // "modal" | "sidebar" | "inline"
   launcher: true,                   // floating launcher button (modal/sidebar); false to open it yourself
   target: "#app",                   // inline container; modal/sidebar → <body>
@@ -80,8 +81,24 @@ new Widget({
 
 The token lives in the browser, so **mint a user-scoped, short-lived token
 server-side** — where the page already knows who the logged-in user is — and
-never expose a raw or tenant-wide API key. `headers` is only for non-auth
-config the endpoint expects.
+never expose a raw or tenant-wide API key. In your workflow file, the token is
+available as `$current_user.token`.
+
+### Agent configuration & custom headers
+
+`config` keys are sent as `Config-<Key>` request headers and are available in
+your workflow file as `$config.<key>` (`config: { locale: "fr" }` →
+`$config.locale`); `headers` adds any other header. Key matching is
+case-insensitive and treats `-` and `_` as equivalent — prefer dash-separated
+keys. Both accept a map, or a callback re-evaluated on every request:
+
+```ts
+new Widget({
+  endpoint,
+  config: { locale: "fr" },
+  headers: () => ({ "X-Request-Id": crypto.randomUUID() }),
+})
+```
 
 ### Markdown rendering
 

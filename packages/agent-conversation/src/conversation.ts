@@ -2,10 +2,17 @@ import { parseNdjson } from "./stream.js"
 import type {
   AgentEvent,
   ConversationOptions,
+  HeadersProvider,
   Message,
   SendOptions,
   TokenProvider,
 } from "./types.js"
+
+async function resolveHeaders(
+  provider: HeadersProvider,
+): Promise<Record<string, string>> {
+  return typeof provider === "function" ? await provider() : provider
+}
 
 type Listeners = {
   text: (delta: string) => void
@@ -61,7 +68,8 @@ export class StreamResult implements AsyncIterable<AgentEvent>, PromiseLike<stri
 export class Conversation {
   #endpoint: string
   #token?: TokenProvider
-  #headers: Record<string, string>
+  #config: HeadersProvider
+  #headers: HeadersProvider
   #fetch: typeof fetch
   #messages: Message[]
   #listeners: { [K in keyof Listeners]: Set<Listeners[K]> } = {
@@ -75,6 +83,7 @@ export class Conversation {
   constructor(options: ConversationOptions) {
     this.#endpoint = options.endpoint
     this.#token = options.token
+    this.#config = options.config ?? {}
     this.#headers = options.headers ?? {}
     this.#fetch = options.fetch ?? globalThis.fetch
     this.#messages = options.messages ? [...options.messages] : []
@@ -141,12 +150,18 @@ export class Conversation {
   async #request(signal?: AbortSignal): Promise<Response> {
     const doFetch = this.#fetch
     const token = typeof this.#token === "function" ? await this.#token() : this.#token
+    const config = await resolveHeaders(this.#config)
+    const headers = await resolveHeaders(this.#headers)
+    const configHeaders = Object.fromEntries(
+      Object.entries(config).map(([key, value]) => [`Config-${key}`, value]),
+    )
     return doFetch(this.#endpoint, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        ...this.#headers,
+        ...configHeaders,
+        ...headers,
       },
       body: JSON.stringify({ messages: this.#messages }),
       signal,

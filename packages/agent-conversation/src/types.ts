@@ -14,6 +14,11 @@ export type AgentEvent =
 /** A bearer token, or a callback re-evaluated per request (for short-lived tokens). */
 export type TokenProvider = string | (() => string | Promise<string>)
 
+/** A header map, or a callback re-evaluated per request (for values that change). */
+export type HeadersProvider =
+  | Record<string, string>
+  | (() => Record<string, string> | Promise<Record<string, string>>)
+
 export interface ConversationOptions {
   /** The agent chat endpoint URL to POST conversations to. */
   endpoint: string
@@ -23,8 +28,14 @@ export interface ConversationOptions {
    * Mint a user-scoped, short-lived token server-side — never ship a raw key.
    */
   token?: TokenProvider
-  /** Extra request headers (config, not auth — prefer `token` for auth). */
-  headers?: Record<string, string>
+  /**
+   * Agent configuration keys, sent as `Config-<Key>` request headers
+   * (`{ locale: "fr" }` → `Config-locale: fr`). Map, or a callback
+   * re-evaluated on every request.
+   */
+  config?: HeadersProvider
+  /** Extra request headers, merged last. Map, or a callback re-evaluated on every request. */
+  headers?: HeadersProvider
   /** Custom fetch implementation (SSR, testing). Defaults to global `fetch`. */
   fetch?: typeof fetch
   /** Seed the conversation history. */
