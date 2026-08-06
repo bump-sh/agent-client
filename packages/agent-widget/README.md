@@ -1,7 +1,8 @@
 # @bump-sh/agent-widget
 
-Embeddable, themeable chat widget for Bump.sh agents. A Web Component you drop in
-with 3 lines — fully isolated (Shadow DOM), fully customizable.
+Embeddable, themeable chat widget for [Bump.sh](https://bump.sh) agents. A Web
+Component you drop in with 3 lines — fully isolated (Shadow DOM), fully
+customizable.
 
 - **3-line path** — `new Widget({ endpoint })` and you have a chat box.
 - **3 display modes** — `modal` (default), `sidebar`, `inline`.
@@ -15,6 +16,10 @@ with 3 lines — fully isolated (Shadow DOM), fully customizable.
 ```sh
 npm install @bump-sh/agent-widget
 ```
+
+Requires a modern browser with Web Components and native `<dialog>` support
+(all evergreen browsers). The only dependency is
+[`@bump-sh/agent-conversation`](../agent-conversation).
 
 ## Quickstart
 
@@ -30,6 +35,8 @@ That mounts a floating launcher + modal. Or declaratively:
 <agent-widget endpoint="https://…/agent" mode="sidebar"></agent-widget>
 <script type="module" src="https://unpkg.com/@bump-sh/agent-widget"></script>
 ```
+
+Importing the package auto-registers the `<agent-widget>` element.
 
 ## Local demo
 
@@ -50,21 +57,47 @@ const widget = new Widget({
   headers,                          // extra request headers (map or per-request callback)
   mode: "modal",                    // "modal" | "sidebar" | "inline"
   launcher: true,                   // floating launcher button (modal/sidebar); false to open it yourself
-  target: "#app",                   // inline container; modal/sidebar → <body>
-  open: false,                      // start opened
-  theme: { accent: "#0a0a0a" },     // → CSS custom properties
+  target: "#app",                   // inline container (selector or element); modal/sidebar → <body>
+  open: false,                      // start opened (inline is always open)
+  theme: { accent: "#0a0a0a" },     // → CSS custom properties, see Theming
   title: "Assistant",
   subtitle: "AI Agent",             // small line under the title
   placeholder: "Ask anything…",
-  greeting: "Hi! How can I help?",  // optional first assistant message
+  greeting: "Hi! How can I help?",  // optional first assistant message (visual only, not sent to the agent)
   avatar: "https://…/logo.png",     // image URL or inline emoji/HTML
   disclaimer: "AI can make mistakes…", // footer under the composer ("" to hide)
+  labels: { send: "Send", close: "Close", launch: "Open chat", today: "Today" },
+                                    // a11y labels + the date divider — override to localize
   renderMarkdown: (text) => "…",    // replace the built-in safe renderer
 })
-
-widget.open(); widget.close(); widget.toggle(); widget.destroy()
-widget.conversation // the underlying Conversation
 ```
+
+The instance is the handle:
+
+```ts
+widget.open(); widget.close(); widget.toggle()
+widget.destroy()      // remove the element from the page
+widget.conversation   // the underlying Conversation (history, events, reset)
+widget.element        // the <agent-widget> DOM element
+```
+
+### HTML attributes
+
+For declarative use, these attributes are observed and reactive — change one
+and the widget updates:
+
+| attribute     | maps to        | notes                                          |
+| ------------- | -------------- | ---------------------------------------------- |
+| `endpoint`    | `endpoint`     | Changing it resets the built-in conversation.  |
+| `mode`        | `mode`         | `modal` \| `sidebar` \| `inline`.              |
+| `open`        | `open()`/`close()` | Present = open. Toggle it to drive the panel. |
+| `title`       | `title`        |                                                |
+| `subtitle`    | `subtitle`     |                                                |
+| `placeholder` | `placeholder`  | Also the empty-state hint.                     |
+
+Everything else (`token`, `config`, `theme`, callbacks…) is JS-only: pass it
+to `new Widget(options)`, or call `element.configure(options)` before
+attaching a hand-created element.
 
 ### Authentication
 
@@ -103,9 +136,10 @@ new Widget({
 ### Markdown rendering
 
 The built-in renderer is intentionally tiny and dependency-free: it escapes all
-HTML first, then re-introduces a fixed, safe subset (bold, code, lists, tables,
-and links restricted to `http(s)`/`mailto`/relative schemes). It keeps the bundle
-small — no `javascript:`/`data:` links, no raw HTML passthrough.
+HTML first, then re-introduces a fixed, safe subset — bold, italic, inline code,
+code blocks, headings, lists, blockquotes, tables, horizontal rules, and links
+restricted to `http(s)`/`mailto`/relative schemes. It keeps the bundle small —
+no `javascript:`/`data:` links, no raw HTML passthrough.
 
 Need full CommonMark/GFM? Swap in a specialized renderer via `renderMarkdown`.
 Always pair the parser with a sanitizer — do not trust model output:
@@ -122,6 +156,9 @@ new Widget({
 
 ## Bring your own conversation
 
+Build the `Conversation` yourself when you need direct access to it — history,
+`on()` events, `reset()` — or to share it with other parts of your app:
+
 ```ts
 import { Conversation } from "@bump-sh/agent-conversation"
 import { Widget } from "@bump-sh/agent-widget"
@@ -129,6 +166,9 @@ import { Widget } from "@bump-sh/agent-widget"
 const conversation = new Conversation({ endpoint: "https://…/agent", token: "…" })
 new Widget({ conversation })
 ```
+
+Anything with a `send(content): AsyncIterable<AgentEvent>` works
+(`ConversationLike`), so you can also wrap or mock it.
 
 ## Theming
 
@@ -143,9 +183,31 @@ agent-widget {
 }
 ```
 
-Tokens: `--agent-accent`, `--agent-bg`, `--agent-text`, `--agent-muted`,
-`--agent-user-bg`, `--agent-input-bg`, `--agent-border`, `--agent-code-bg`,
-`--agent-font`, `--agent-mono`, `--agent-radius`, `--agent-width`, `--agent-z`.
+| token                 | default                 | what it styles                          |
+| --------------------- | ----------------------- | --------------------------------------- |
+| `--agent-accent`      | `#0a0a0a`               | Launcher & accents                      |
+| `--agent-bg`          | `#ffffff`               | Panel background                        |
+| `--agent-text`        | `#0d0d0d`               | Text                                    |
+| `--agent-muted`       | `#8a8a8f`               | Secondary text (subtitle, status…)      |
+| `--agent-user-bg`     | `#f4f4f5`               | User message bubble                     |
+| `--agent-input-bg`    | `#f7f7f8`               | Composer input                          |
+| `--agent-send-bg`     | `#0a0a0a`               | Send button                             |
+| `--agent-border`      | `#ececee`               | Borders                                 |
+| `--agent-code-bg`     | `#f4f4f6`               | Code blocks                             |
+| `--agent-th`          | `#f7f7f8`               | Table header background                 |
+| `--agent-avatar-bg`   | `#f1f1f3`               | Avatar background                       |
+| `--agent-avatar-size` | `28px`                  | Avatar box                              |
+| `--agent-font`        | system sans stack       | Font family                             |
+| `--agent-mono`        | system mono stack       | Code font family                        |
+| `--agent-radius`      | `20px`                  | Corner radius                           |
+| `--agent-width`       | `26vw`                  | Sidebar width                           |
+| `--agent-gutter`      | `18px`                  | Horizontal padding                      |
+| `--agent-column`      | `760px`                 | Max conversation width (inline)         |
+| `--agent-z`           | `2147483000`            | Stacking order                          |
+
+The `theme` option is a JS shortcut for the most common ones — `accent`, `bg`,
+`text`, `muted`, `userBg`, `border`, `codeBg`, `font`, `radius`, `width`, `z` —
+set the rest directly in CSS as above.
 
 Style internal structure with `::part()`:
 
@@ -158,7 +220,33 @@ Parts: `launcher`, `panel`, `header`, `title`, `subtitle`, `close`, `thread`,
 `message`, `message-user`, `message-assistant`, `avatar`, `composer`,
 `input`, `send`, `status`, `disclaimer`.
 
-Replace whole regions with slots: `title`, `empty`, `composer-actions`.
+Replace whole regions with slots: `title`, `empty` (empty-thread state),
+`composer-actions` (left of the send button).
+
+```html
+<agent-widget endpoint="https://…/agent">
+  <span slot="title">Ask our docs</span>
+</agent-widget>
+```
+
+## Interaction & accessibility
+
+- **Enter** sends, **Shift+Enter** inserts a newline.
+- Modal and sidebar are native `<dialog>`s shown top-layer: **Escape** closes,
+  focus is trapped, and clicking the backdrop dismisses.
+- Launcher, close, and send buttons carry `aria-label`s — localize them via
+  `labels`.
+- While a reply streams, sending is disabled and a status line shows the
+  tools the agent is running.
+
+## Exports
+
+- `Widget` — the one-line façade (create, mount, handle).
+- `AgentWidget` — the custom element class, for hand-rolled setups.
+- `defineAgentWidget(tag?)` — register the element, optionally under a custom
+  tag name (idempotent; called automatically on import).
+- `renderMarkdown` — the built-in safe renderer, reusable on its own.
+- Types: `WidgetOptions`, `ConversationLike`, `Labels`, `Mode`, `Theme`.
 
 ## License
 

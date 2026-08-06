@@ -1,8 +1,8 @@
 # agent-client
 
-Open-source JavaScript SDK for embedding [Bump.sh](https://bump.sh) agents into any
-web app — from a headless streaming client up to a drop-in chat widget. An npm
-workspaces monorepo with two layers you can use together or on their own.
+Open-source JavaScript SDK for embedding [Bump.sh](https://bump.sh) agents into
+any web app — from a headless streaming client up to a drop-in chat widget. An
+npm workspaces monorepo with two layers you can use together or on their own.
 
 ## Packages
 
@@ -26,7 +26,7 @@ new Widget({ endpoint: "https://your-host/demo/weather/agent" })
 
 Mounts a floating launcher + modal. Three display modes — `modal` (default),
 `sidebar`, `inline` — plus CSS-token theming, `::part()` and slots. See the
-[widget README](packages/agent-widget).
+[widget README](packages/agent-widget) for every option.
 
 ## Headless conversation
 
@@ -43,6 +43,9 @@ for await (const event of conversation.send("And in Lyon?")) {
   if (event.type === "text") append(event.delta)
 }
 ```
+
+Events, error handling, cancellation, and the wire protocol are covered in the
+[conversation README](packages/agent-conversation).
 
 The widget is built on this — bring your own conversation when you need to:
 
@@ -80,12 +83,19 @@ open packages/agent-widget/examples/index.html
 
 ## Develop
 
+Requires Node.js ≥ 18.
+
 ```sh
 npm install            # links the workspaces
 npm test               # test every package
 npm run build          # build every package
 npm run check          # lint + format check (Biome)
+npm run format         # format (Biome, writes)
 ```
+
+Layout: each package under [`packages/`](packages) has `src/`, `test/`, and
+builds to `dist/` (ESM + CJS + types) with tsup. Tests run on Vitest
+(happy-dom); linting and formatting are Biome.
 
 ## License
 
