@@ -1,4 +1,4 @@
-/** A single parsed line from the NDJSON stream (the Bump.sh wire format). */
+/** A single parsed line from the NDJSON stream (the Bump.sh agent API wire format). */
 export type WireEvent =
   | { type: "text"; content: string }
   | { type: "tool"; names: string[] }

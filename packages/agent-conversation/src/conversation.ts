@@ -62,7 +62,7 @@ export class StreamResult implements AsyncIterable<AgentEvent>, PromiseLike<stri
 }
 
 /**
- * A stateful conversation with a single Bump.sh agent endpoint. It keeps the
+ * A stateful conversation with a single Bump.sh agent API endpoint. It keeps the
  * message history and replays it on every {@link send}.
  */
 export class Conversation {
