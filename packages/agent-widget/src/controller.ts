@@ -78,9 +78,7 @@ export class Controller {
   }
 
   #liveStatus(tool: string): string {
-    const label = tool
-      ? `${TOOL_ICON}<span class="status-label">${tool}</span>`
-      : ""
+    const label = tool ? `${TOOL_ICON}<span class="status-label">${tool}</span>` : ""
     return `<div class="status" part="status">${label}${SPINNER}</div>`
   }
 
