@@ -7,6 +7,9 @@ Private package, never published.
 
 ## Run it
 
+A live instance is deployed from `main` at
+**<https://bump-sh.github.io/agent-client/>**. Locally:
+
 ```sh
 npm run playground        # from the repo root — serves http://localhost:8000
 ```
