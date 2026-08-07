@@ -20,6 +20,17 @@ npm run build -w @bump-sh/agent-playground
 `dist/` is fully self-contained static files (widget bundled in) — drop the
 directory on any static host or embed it in another site.
 
+## Prefill via URL
+
+Every option can be passed as a query parameter named after its schema key —
+the form, preview and code panel pick them up on load (then the URL is
+cleaned). URL-encode values (`#e11d48` → `%23e11d48`); booleans are
+`true`/`false`. The token is deliberately not accepted in URLs.
+
+```
+/?endpoint=https://run.bump.sh/acme/support/agent&mode=sidebar&theme.accent=%23e11d48
+```
+
 ## How it works
 
 Everything is driven by one declarative list, [`src/schema.ts`](src/schema.ts):

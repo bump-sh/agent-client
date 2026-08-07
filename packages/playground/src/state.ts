@@ -26,6 +26,32 @@ export function save(state: State): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
 }
 
+/**
+ * Parse options from a query string ("?mode=sidebar&theme.accent=%23e11d48"):
+ * one parameter per schema key. The token is deliberately ignored — secrets
+ * do not belong in URLs.
+ */
+export function fromQuery(search: string): State {
+  const params = new URLSearchParams(search)
+  const overrides: State = {}
+  for (const option of OPTIONS) {
+    if (option.key === "token") continue
+    const value = params.get(option.key)
+    // "<" is refused everywhere: launcherIcon/avatar are raw-HTML sinks, and a
+    // crafted link must not run script in the (same-origin) preview frame.
+    if (value === null || value.includes("<")) continue
+    overrides[option.key] =
+      typeof option.default === "boolean" ? value === "true" : value
+  }
+  return overrides
+}
+
+/** Merge URL overrides in. A link aiming at its own endpoint loses the stored token. */
+export function applyShared(state: State, shared: State): void {
+  if (shared.endpoint && shared.endpoint !== state.endpoint) state.token = ""
+  Object.assign(state, shared)
+}
+
 /** Restore every widget option to its default; connection details survive. */
 export function resetAll(state: State): void {
   for (const option of resettableOptions()) state[option.key] = option.default

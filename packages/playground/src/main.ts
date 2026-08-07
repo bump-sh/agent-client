@@ -2,11 +2,26 @@ import "./styles.css"
 import { createCodePanel } from "./codepanel.js"
 import { checkEndpoint } from "./endpoint-check.js"
 import { renderForm } from "./form.js"
-import { type State, hasChanges, load, resetAll, save } from "./state.js"
+import {
+  type State,
+  applyShared,
+  fromQuery,
+  hasChanges,
+  load,
+  resetAll,
+  save,
+} from "./state.js"
 
 type FrameWindow = Window & { renderWidget?: (state: State) => void }
 
 const state = load()
+const shared = fromQuery(location.search)
+if (Object.keys(shared).length > 0) {
+  applyShared(state, shared)
+  save(state)
+  // Clean the URL so later edits and reloads behave normally.
+  history.replaceState(null, "", location.pathname)
+}
 const frame = document.querySelector("#frame") as HTMLIFrameElement
 const codePanel = createCodePanel(document.querySelector("#code") as HTMLElement)
 const resetAllButton = document.querySelector("#reset-all") as HTMLButtonElement
