@@ -10,7 +10,7 @@ export const css = `
   --agent-code-bg: #f4f4f6;
   --agent-th: #f7f7f8;
   --agent-avatar-bg: #f1f1f3;
-  --agent-send-bg: #0a0a0a;
+  --agent-button-bg: var(--agent-accent);
   --agent-input-bg: #f7f7f8;
   --agent-radius: 20px;
   --agent-font: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
@@ -34,7 +34,7 @@ export const css = `
 .launcher {
   position: fixed; right: 22px; bottom: 22px; z-index: var(--agent-z);
   width: 56px; height: 56px; border: 0; border-radius: 50%; cursor: pointer;
-  background: var(--agent-accent); color: #fff;
+  background: var(--agent-button-bg); color: #fff;
   display: flex; align-items: center; justify-content: center;
   font-size: 24px; overflow: hidden;
   box-shadow: 0 6px 24px rgba(0, 0, 0, .18);
@@ -170,10 +170,10 @@ dialog.panel::backdrop { background: transparent; }
 .tools { display: flex; align-items: center; gap: 6px; }
 .send {
   flex: none; width: 36px; height: 36px; border: 0; border-radius: 50%; cursor: pointer;
-  background: var(--agent-send-bg); color: #fff;
+  background: var(--agent-button-bg); color: #fff;
   display: flex; align-items: center; justify-content: center; transition: background .15s, opacity .15s;
 }
-.send:hover:not(:disabled) { background: #262626; }
+.send:hover:not(:disabled) { background: color-mix(in srgb, var(--agent-button-bg) 85%, #fff); }
 .send:disabled { opacity: .38; cursor: default; }
 .send svg { width: 18px; height: 18px; }
 

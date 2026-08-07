@@ -7,6 +7,7 @@ import type { ConversationLike, Labels, Mode, Theme } from "./types.js"
 
 const THEME_VARS: Record<keyof Theme, string> = {
   accent: "--agent-accent",
+  buttonBg: "--agent-button-bg",
   bg: "--agent-bg",
   text: "--agent-text",
   muted: "--agent-muted",

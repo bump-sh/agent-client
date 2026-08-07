@@ -14,6 +14,8 @@ export interface ConversationLike {
 /** Theme tokens. Each maps to a `--agent-*` CSS custom property on the host. */
 export interface Theme {
   accent?: string
+  /** Launcher & send button background. Defaults to the accent color. */
+  buttonBg?: string
   bg?: string
   text?: string
   muted?: string
