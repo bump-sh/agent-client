@@ -6,6 +6,7 @@
   "workspaces": ["packages/*"],
   "scripts": {
     "build": "npm run build --workspaces --if-present",
+    "playground": "npm run dev -w @bump-sh/agent-playground",
     "test": "npm run test --workspaces --if-present",
     "check": "biome check packages",
     "format": "biome format --write packages"

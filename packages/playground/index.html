@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>agent-widget — playground</title>
+    <link rel="stylesheet" href="./main.css" />
+  </head>
+  <body>
+    <aside class="controls">
+      <header class="brand">
+        <div class="brand-row">
+          <h1>agent-widget</h1>
+          <button id="reset-all" class="reset-all" type="button" hidden>Reset all</button>
+        </div>
+        <p>Configure the widget, watch it live, copy the code.</p>
+      </header>
+      <form id="form"></form>
+    </aside>
+    <main class="stage">
+      <div class="canvas">
+        <iframe id="frame" class="frame" src="./frame.html" title="Widget preview"></iframe>
+      </div>
+      <section class="code" id="code" aria-label="Generated code"></section>
+    </main>
+    <script src="./main.js" defer></script>
+  </body>
+</html>

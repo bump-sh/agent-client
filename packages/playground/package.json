@@ -1,0 +1,20 @@
+{
+  "name": "@bump-sh/agent-playground",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Interactive configurator for @bump-sh/agent-widget — tweak options, see the widget live, copy the code.",
+  "type": "module",
+  "scripts": {
+    "build": "esbuild src/main.ts src/frame.ts --bundle --format=iife --target=es2022 --minify --outdir=dist --alias:@bump-sh/agent-widget=../agent-widget/src/index.ts --alias:@bump-sh/agent-conversation=../agent-conversation/src/index.ts && cp index.html frame.html dist/",
+    "dev": "mkdir -p dist && cp index.html frame.html dist/ && esbuild src/main.ts src/frame.ts --bundle --format=iife --target=es2022 --outdir=dist --servedir=dist --watch=forever --alias:@bump-sh/agent-widget=../agent-widget/src/index.ts --alias:@bump-sh/agent-conversation=../agent-conversation/src/index.ts",
+    "test": "vitest run",
+    "check": "biome check src test && tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "@bump-sh/agent-widget": "^0.1.0",
+    "esbuild": "^0.27.7"
+  }
+}
