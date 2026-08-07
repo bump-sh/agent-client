@@ -71,15 +71,20 @@ request header and is available in your workflow file as `$config.<key>` —
 and `headers` for any other custom header. Both packages accept a map, or a
 callback re-evaluated on every request.
 
-## Local demo
+## Playground
 
-No server needed — build the widget bundle and open the page:
+An interactive configurator lives in
+[`packages/playground`](packages/playground): tweak every widget option in a
+form, watch the widget live against your endpoint, and copy the exact JS or
+HTML that reproduces the result.
 
 ```sh
 npm install
-npm run example -w @bump-sh/agent-widget   # writes examples/agent-widget.js
-open packages/agent-widget/examples/index.html
+npm run playground     # serves http://localhost:8000
 ```
+
+`npm run build -w @bump-sh/agent-playground` produces a self-contained static
+`dist/` you can host anywhere.
 
 ## Develop
 

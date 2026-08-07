@@ -38,13 +38,13 @@ That mounts a floating launcher + modal. Or declaratively:
 
 Importing the package auto-registers the `<agent-widget>` element.
 
-## Local demo
+## Playground
 
-Build a self-contained bundle and open the page — no server needed:
+Explore every option interactively — live preview plus the code to copy — with
+the [playground](../playground):
 
 ```sh
-npm run example                 # writes examples/agent-widget.js
-open examples/index.html        # set an endpoint, try the three modes
+npm run playground              # from the repo root
 ```
 
 ## Options
