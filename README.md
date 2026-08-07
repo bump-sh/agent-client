@@ -76,7 +76,8 @@ callback re-evaluated on every request.
 **[Try it live →](https://bump-sh.github.io/agent-client/)**
 
 An interactive configurator lives in
-[`packages/playground`](packages/playground): tweak every widget option in a
+[`packages/agent-playground`](packages/agent-playground): tweak every widget
+option in a
 form, watch the widget live against your endpoint, and copy the exact JS or
 HTML that reproduces the result. Deployed to GitHub Pages on every push to
 `main`; locally:

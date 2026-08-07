@@ -41,7 +41,7 @@ Importing the package auto-registers the `<agent-widget>` element.
 ## Playground
 
 Explore every option interactively — live preview plus the code to copy — with
-the [playground](../playground):
+the [playground](../agent-playground):
 
 ```sh
 npm run playground              # from the repo root
