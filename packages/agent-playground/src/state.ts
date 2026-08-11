@@ -46,6 +46,17 @@ export function fromQuery(search: string): State {
   return overrides
 }
 
+/** Serialize for the address bar: only non-default values, never the token. */
+export function toQuery(state: State): string {
+  const params = new URLSearchParams()
+  for (const option of OPTIONS) {
+    if (option.key === "token") continue
+    const value = state[option.key]
+    if (value !== option.default) params.set(option.key, String(value))
+  }
+  return params.toString()
+}
+
 /** Merge URL overrides in. A link aiming at its own endpoint loses the stored token. */
 export function applyShared(state: State, shared: State): void {
   if (shared.endpoint && shared.endpoint !== state.endpoint) state.token = ""

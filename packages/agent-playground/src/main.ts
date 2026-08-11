@@ -10,6 +10,7 @@ import {
   load,
   resetAll,
   save,
+  toQuery,
 } from "./state.js"
 
 type FrameWindow = Window & { renderWidget?: (state: State) => void }
@@ -19,9 +20,8 @@ const shared = fromQuery(location.search)
 if (Object.keys(shared).length > 0) {
   applyShared(state, shared)
   save(state)
-  // Clean the URL so later edits and reloads behave normally.
-  history.replaceState(null, "", location.pathname)
 }
+syncUrl()
 const frame = document.querySelector("#frame") as HTMLIFrameElement
 const codePanel = createCodePanel(document.querySelector("#code") as HTMLElement)
 const resetAllButton = document.querySelector("#reset-all") as HTMLButtonElement
@@ -45,7 +45,19 @@ function onChange(): void {
   resetAllButton.hidden = !hasChanges(state)
   scheduleEndpointCheck()
   clearTimeout(timer)
-  timer = window.setTimeout(renderPreview, 200)
+  timer = window.setTimeout(() => {
+    renderPreview()
+    syncUrl()
+  }, 200)
+}
+
+/**
+ * Keep the address bar shareable: it always mirrors the non-default options.
+ * Debounced with the preview — Safari rate-limits replaceState.
+ */
+function syncUrl(): void {
+  const query = toQuery(state)
+  history.replaceState(null, "", query ? `?${query}` : location.pathname)
 }
 
 /** A reset changes values outside their controls — rebuild the form to reflect it. */

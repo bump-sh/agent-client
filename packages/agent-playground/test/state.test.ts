@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest"
-import { applyShared, defaults, fromQuery, hasChanges, resetAll } from "../src/state.js"
+import {
+  applyShared,
+  defaults,
+  fromQuery,
+  hasChanges,
+  resetAll,
+  toQuery,
+} from "../src/state.js"
 
 describe("resetAll", () => {
   it("restores widget options but keeps the connection details", () => {
@@ -40,6 +47,39 @@ describe("fromQuery", () => {
       {},
     )
     expect(fromQuery("?title=%3Cscript%3E")).toEqual({})
+  })
+})
+
+describe("toQuery", () => {
+  it("serializes only non-default values and never the token", () => {
+    expect(toQuery(defaults())).toBe("")
+    const state = {
+      ...defaults(),
+      endpoint: "https://x/agent",
+      token: "s3cret",
+      launcher: false,
+      "theme.accent": "#e11d48",
+    }
+    const query = toQuery(state)
+    expect(query).toContain("endpoint=")
+    expect(query).toContain("launcher=false")
+    expect(query).not.toContain("s3cret")
+  })
+
+  it("round-trips through fromQuery", () => {
+    const state = {
+      ...defaults(),
+      endpoint: "https://x/agent",
+      title: "Weather bot",
+      launcher: false,
+      "theme.accent": "#e11d48",
+    }
+    expect(fromQuery(`?${toQuery(state)}`)).toEqual({
+      endpoint: "https://x/agent",
+      title: "Weather bot",
+      launcher: false,
+      "theme.accent": "#e11d48",
+    })
   })
 })
 

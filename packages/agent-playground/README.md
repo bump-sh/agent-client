@@ -23,12 +23,14 @@ npm run build -w @bump-sh/agent-playground
 `dist/` is fully self-contained static files (widget bundled in) — drop the
 directory on any static host or embed it in another site.
 
-## Prefill via URL
+## Share via URL
 
-Every option can be passed as a query parameter named after its schema key —
-the form, preview and code panel pick them up on load (then the URL is
-cleaned). URL-encode values (`#e11d48` → `%23e11d48`); booleans are
-`true`/`false`. The token is deliberately not accepted in URLs.
+The address bar always mirrors the configuration: every non-default option
+appears as a query parameter named after its schema key, updated live as you
+edit — copy the URL to share the exact setup. Opening such a link fills the
+form, preview and code panel. Values are URL-encoded (`#e11d48` →
+`%23e11d48`); booleans are `true`/`false`. The token never goes through the
+URL — it is neither emitted nor accepted.
 
 ```
 /?endpoint=https://run.bump.sh/acme/support/agent&mode=sidebar&theme.accent=%23e11d48
