@@ -57,6 +57,7 @@ function renderField(
 function control(option: OptionDef, state: State, onChange: () => void): HTMLElement {
   if (option.input === "segmented") return segmentedControl(option, state, onChange)
   if (option.input === "color") return colorControl(option, state, onChange)
+  if (option.input === "list") return listControl(option, state, onChange)
   return textControl(option, state, onChange)
 }
 
@@ -67,6 +68,22 @@ function textControl(
 ): HTMLElement {
   const input = el("input", "text-input") as HTMLInputElement
   input.type = "text"
+  input.value = String(state[option.key])
+  input.placeholder = option.placeholder ?? ""
+  input.addEventListener("input", () => {
+    state[option.key] = input.value
+    onChange()
+  })
+  return input
+}
+
+function listControl(
+  option: OptionDef,
+  state: State,
+  onChange: () => void,
+): HTMLElement {
+  const input = el("textarea", "text-input") as HTMLTextAreaElement
+  input.rows = 3
   input.value = String(state[option.key])
   input.placeholder = option.placeholder ?? ""
   input.addEventListener("input", () => {

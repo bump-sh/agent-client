@@ -12,9 +12,20 @@ export function toOptions(state: State): Options {
   const options: Options = {}
   for (const option of OPTIONS) {
     const value = state[option.key]
-    if (value !== option.default) setPath(options, option.key, value)
+    if (value === option.default) continue
+    if (option.input === "list") setList(options, option.key, String(value))
+    else setPath(options, option.key, value)
   }
   return options
+}
+
+/** A list option holds one item per line in the form; emit it as a clean array. */
+function setList(target: Options, key: string, value: string): void {
+  const items = value
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+  if (items.length > 0) setPath(target, key, items)
 }
 
 function setPath(target: Options, key: string, value: unknown): void {

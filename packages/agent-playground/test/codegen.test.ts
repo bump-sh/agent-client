@@ -37,6 +37,13 @@ describe("jsSnippet", () => {
     expect(snippet).toContain('  labels: { send: "Envoyer" },')
   })
 
+  it("emits list options as array literals", () => {
+    const state = { ...defaults(), suggestions: "What can you do?\nPricing" }
+    expect(jsSnippet(state)).toContain(
+      '  suggestions: ["What can you do?", "Pricing"],',
+    )
+  })
+
   it("quotes values safely", () => {
     const state = { ...defaults(), title: 'Say "hi"' }
     expect(jsSnippet(state)).toContain('  title: "Say \\"hi\\"",')
@@ -62,6 +69,9 @@ describe("htmlSnippet", () => {
     const snippet = htmlSnippet(state)
     expect(snippet).toContain(
       "<!-- launcher, greeting need the JS API — see the JavaScript tab. -->",
+    )
+    expect(htmlSnippet({ ...defaults(), suggestions: "Pricing" })).toContain(
+      "<!-- suggestions needs the JS API",
     )
     expect(snippet).toContain('title="a&quot;b"')
     expect(htmlSnippet({ ...defaults(), greeting: "Hi" })).toContain(

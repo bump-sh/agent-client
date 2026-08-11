@@ -8,7 +8,8 @@ export interface OptionDef {
   /** State key. Dots nest in the generated options object ("theme.accent"). */
   key: string
   label: string
-  input: "text" | "color" | "toggle" | "segmented"
+  /** "list" is a textarea holding one item per line, emitted as a string[]. */
+  input: "text" | "color" | "toggle" | "segmented" | "list"
   /** The widget's own default — the code panel only emits values that differ. */
   default: Value
   /** What the playground starts with, when it differs from the widget default. */
@@ -100,6 +101,13 @@ export const SECTIONS: Section[] = [
         input: "text",
         default: "",
         placeholder: "Hi! How can I help?",
+      },
+      {
+        key: "suggestions",
+        label: "Suggested prompts",
+        input: "list",
+        default: "",
+        placeholder: "One prompt per line",
       },
       {
         key: "disclaimer",

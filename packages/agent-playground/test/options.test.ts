@@ -33,6 +33,19 @@ describe("toOptions", () => {
     })
   })
 
+  it("turns list options into arrays, dropping blank lines and trimming", () => {
+    const state = {
+      ...widgetDefaults(),
+      suggestions: " What can you do? \n\nPricing\n",
+    }
+    expect(toOptions(state)).toEqual({ suggestions: ["What can you do?", "Pricing"] })
+  })
+
+  it("emits nothing for a list option holding only whitespace", () => {
+    const state = { ...widgetDefaults(), suggestions: " \n \n" }
+    expect(toOptions(state)).toEqual({})
+  })
+
   it("keeps meaningful falsy values, like launcher: false and a cleared disclaimer", () => {
     const state = { ...widgetDefaults(), launcher: false, disclaimer: "" }
     expect(toOptions(state)).toEqual({ launcher: false, disclaimer: "" })

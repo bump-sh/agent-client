@@ -39,6 +39,8 @@ function withEndpoint(options: Options): Options {
 }
 
 function literal(value: unknown): string {
+  if (Array.isArray(value))
+    return `[${value.map((item) => JSON.stringify(item)).join(", ")}]`
   if (typeof value !== "object" || value === null) return JSON.stringify(value)
   const entries = Object.entries(value).map(([k, v]) => `${k}: ${JSON.stringify(v)}`)
   return `{ ${entries.join(", ")} }`

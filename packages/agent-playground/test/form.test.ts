@@ -56,6 +56,24 @@ describe("renderForm", () => {
     expect(swatch.value).toBe("#ffffff")
   })
 
+  it("renders list options as a textarea bound to the state", () => {
+    const state = defaults()
+    const root = document.createElement("form")
+    renderForm(
+      root,
+      state,
+      () => {},
+      () => {},
+    )
+
+    const input = fieldLabelled(root, "Suggested prompts").querySelector(
+      "textarea.text-input",
+    ) as HTMLTextAreaElement
+    input.value = "What can you do?\nPricing"
+    input.dispatchEvent(new Event("input"))
+    expect(state.suggestions).toBe("What can you do?\nPricing")
+  })
+
   it("gives connection fields and one-click controls no reset affordance", () => {
     const state = {
       ...defaults(),

@@ -133,6 +133,10 @@ details[open] summary.section-title::after {
 .text-input::placeholder {
   color: #b3b3b8;
 }
+textarea.text-input {
+  resize: vertical;
+  line-height: 1.5;
+}
 
 .field-note {
   display: block;
