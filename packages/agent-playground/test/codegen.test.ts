@@ -2,9 +2,12 @@ import { describe, expect, it } from "vitest"
 import { htmlSnippet, jsSnippet } from "../src/codegen.js"
 import { defaults } from "../src/state.js"
 
+// Neutralize the playground's inline preset for tests about other options.
+const widgetDefaults = () => ({ ...defaults(), mode: "modal" })
+
 describe("jsSnippet", () => {
-  it("shows a fill-in endpoint and nothing else at the defaults", () => {
-    expect(jsSnippet(defaults())).toBe(
+  it("shows a fill-in endpoint and nothing else at the widget defaults", () => {
+    expect(jsSnippet(widgetDefaults())).toBe(
       [
         'import { Widget } from "@bump-sh/agent-widget"',
         "",
@@ -13,6 +16,10 @@ describe("jsSnippet", () => {
         "})",
       ].join("\n"),
     )
+  })
+
+  it("emits the initial inline mode, so the copied code reproduces the preview", () => {
+    expect(jsSnippet(defaults())).toContain('  mode: "inline",')
   })
 
   it("emits changed options, nesting theme and labels inline", () => {

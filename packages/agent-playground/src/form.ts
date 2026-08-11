@@ -1,4 +1,4 @@
-import { type OptionDef, SECTIONS, type Section } from "./schema.js"
+import { type OptionDef, SECTIONS, type Section, baselineOf } from "./schema.js"
 import type { State } from "./state.js"
 
 /** Callbacks the form reports through: a value edit, or a reset needing a re-render. */
@@ -153,14 +153,14 @@ function resetButton(option: OptionDef, state: State, hooks: Hooks): HTMLElement
   button.setAttribute("aria-label", `Reset ${option.label}`)
   button.addEventListener("click", (event) => {
     event.preventDefault() // do not activate the wrapping <label>
-    state[option.key] = option.default
+    state[option.key] = baselineOf(option)
     hooks.onReset()
   })
   return button
 }
 
 function syncModified(field: HTMLElement, option: OptionDef, state: State): void {
-  field.classList.toggle("modified", state[option.key] !== option.default)
+  field.classList.toggle("modified", state[option.key] !== baselineOf(option))
 }
 
 function el(tag: string, className: string): HTMLElement {

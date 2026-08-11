@@ -11,6 +11,8 @@ export interface OptionDef {
   input: "text" | "color" | "toggle" | "segmented"
   /** The widget's own default — the code panel only emits values that differ. */
   default: Value
+  /** What the playground starts with, when it differs from the widget default. */
+  initial?: Value
   choices?: readonly string[]
   placeholder?: string
   /** Attribute name when the option is settable declaratively in HTML. */
@@ -60,7 +62,8 @@ export const SECTIONS: Section[] = [
         label: "Mode",
         input: "segmented",
         default: "modal",
-        choices: ["modal", "sidebar", "inline"],
+        initial: "inline",
+        choices: ["inline", "sidebar", "modal"],
         attribute: "mode",
       },
       { key: "launcher", label: "Launcher button", input: "toggle", default: true },
@@ -247,3 +250,10 @@ export const SECTIONS: Section[] = [
 ]
 
 export const OPTIONS: OptionDef[] = SECTIONS.flatMap((section) => section.options)
+
+/**
+ * The playground's baseline for an option — its initial value when one is set,
+ * the widget default otherwise. Reset, the modified indicators and the shared
+ * URL diff against this; the generated code always diffs against `default`.
+ */
+export const baselineOf = (option: OptionDef): Value => option.initial ?? option.default

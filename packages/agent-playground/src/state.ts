@@ -1,11 +1,11 @@
-import { OPTIONS, type OptionDef, SECTIONS, type Value } from "./schema.js"
+import { OPTIONS, type OptionDef, SECTIONS, type Value, baselineOf } from "./schema.js"
 
 export type State = Record<string, Value>
 
 const STORAGE_KEY = "agent-playground.state"
 
 export function defaults(): State {
-  return Object.fromEntries(OPTIONS.map((option) => [option.key, option.default]))
+  return Object.fromEntries(OPTIONS.map((option) => [option.key, baselineOf(option)]))
 }
 
 /** Defaults overlaid with whatever survived in localStorage (unknown keys dropped). */
@@ -52,7 +52,7 @@ export function toQuery(state: State): string {
   for (const option of OPTIONS) {
     if (option.key === "token") continue
     const value = state[option.key]
-    if (value !== option.default) params.set(option.key, String(value))
+    if (value !== baselineOf(option)) params.set(option.key, String(value))
   }
   return params.toString()
 }
@@ -65,12 +65,12 @@ export function applyShared(state: State, shared: State): void {
 
 /** Restore every widget option to its default; connection details survive. */
 export function resetAll(state: State): void {
-  for (const option of resettableOptions()) state[option.key] = option.default
+  for (const option of resettableOptions()) state[option.key] = baselineOf(option)
 }
 
 /** True when any resettable option differs from its default. */
 export function hasChanges(state: State): boolean {
-  return resettableOptions().some((option) => state[option.key] !== option.default)
+  return resettableOptions().some((option) => state[option.key] !== baselineOf(option))
 }
 
 function resettableOptions(): OptionDef[] {
