@@ -84,6 +84,30 @@ describe("Widget", () => {
     image.destroy()
   })
 
+  it("shows clickable suggestions until the first message is sent", async () => {
+    const chat = new Widget({
+      conversation: fakeConversation(),
+      mode: "inline",
+      suggestions: ["What can you do?", "Show me the docs"],
+    })
+    const shadow = chat.element.shadowRoot as ShadowRoot
+    const chips = shadow.querySelectorAll(".suggestion")
+    expect([...chips].map((chip) => chip.textContent)).toEqual([
+      "What can you do?",
+      "Show me the docs",
+    ])
+    ;(chips[0] as HTMLButtonElement).click()
+    expect(shadow.querySelector(".suggestions")).toBeNull()
+    expect(shadow.querySelector(".turn.user")?.textContent).toBe("What can you do?")
+    chat.destroy()
+  })
+
+  it("renders no suggestions container when none are configured", () => {
+    const chat = new Widget({ conversation: fakeConversation(), mode: "inline" })
+    expect(chat.element.shadowRoot?.querySelector(".suggestions")).toBeNull()
+    chat.destroy()
+  })
+
   it("dismisses on an outside click but not on clicks inside the panel", () => {
     const chat = new Widget({
       conversation: fakeConversation(),

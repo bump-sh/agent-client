@@ -82,6 +82,7 @@ export class AgentWidget extends HTMLElement {
   #subtitleText?: string
   #placeholderText = "Ask anything…"
   #greeting?: string
+  #suggestions: string[] = []
   #avatar?: string
   #launcherIcon?: string
   #disclaimerText = DEFAULT_DISCLAIMER
@@ -113,6 +114,7 @@ export class AgentWidget extends HTMLElement {
     subtitle?: string
     placeholder?: string
     greeting?: string
+    suggestions?: string[]
     avatar?: string
     launcherIcon?: string
     disclaimer?: string
@@ -132,6 +134,7 @@ export class AgentWidget extends HTMLElement {
     if (options.placeholder != null)
       this.setAttribute("placeholder", options.placeholder)
     if (options.greeting != null) this.#greeting = options.greeting
+    if (options.suggestions) this.#suggestions = options.suggestions
     if (options.avatar != null) this.#avatar = options.avatar
     if (options.launcherIcon != null) this.#launcherIcon = options.launcherIcon
     if (options.disclaimer != null) this.#disclaimerText = options.disclaimer
@@ -266,6 +269,7 @@ export class AgentWidget extends HTMLElement {
         <div class="thread empty" part="thread">
           <slot name="empty"><span class="empty-hint">${escapeHtml(this.#placeholderText)}</span></slot>
         </div>
+        ${this.#suggestionsHtml()}
         <form class="composer" part="composer">
           <div class="box">
             <textarea class="input" part="input" rows="1" placeholder="${attr(this.#placeholderText)}"></textarea>
@@ -279,6 +283,15 @@ export class AgentWidget extends HTMLElement {
         </form>
       </${panelTag}>
     `
+  }
+
+  #suggestionsHtml(): string {
+    if (this.#suggestions.length === 0) return ""
+    const chips = this.#suggestions.map(
+      (prompt) =>
+        `<button type="button" class="suggestion" part="suggestion">${escapeHtml(prompt)}</button>`,
+    )
+    return `<div class="suggestions" part="suggestions">${chips.join("")}</div>`
   }
 
   #grabRefs(): void {
@@ -296,6 +309,11 @@ export class AgentWidget extends HTMLElement {
     shadow
       .querySelector(".composer")
       ?.addEventListener("submit", (e) => this.#submit(e))
+    shadow.querySelectorAll(".suggestion").forEach((chip, index) => {
+      chip.addEventListener("click", () =>
+        this.#sendMessage(this.#suggestions[index] ?? ""),
+      )
+    })
     this.#input?.addEventListener("input", () => this.#syncSend())
     this.#input?.addEventListener("keydown", (e) => this.#onKeydown(e as KeyboardEvent))
     if (this.#mode !== "inline") {
@@ -348,15 +366,22 @@ export class AgentWidget extends HTMLElement {
     const input = this.#input as HTMLTextAreaElement
     const content = input.value.trim()
     if (!content || this.#busy) return
-    this.#busy = true
     input.value = ""
+    await this.#sendMessage(content)
+  }
+
+  /** Shared send path for the composer and the suggestion chips. */
+  async #sendMessage(content: string): Promise<void> {
+    if (!content || this.#busy) return
+    this.#busy = true
     this.#syncSend()
+    this.shadowRoot?.querySelector(".suggestions")?.remove()
     try {
       await (this.#controller as Controller).send(content)
     } finally {
       this.#busy = false
       this.#syncSend()
-      input.focus()
+      this.#input?.focus()
     }
   }
 }

@@ -59,6 +59,7 @@ export const css = `
 /* Center the conversation in a readable column on wide screens. */
 :host([mode="inline"]) .header,
 :host([mode="inline"]) .thread,
+:host([mode="inline"]) .suggestions,
 :host([mode="inline"]) .composer {
   padding-inline: max(var(--agent-gutter), calc((100% - var(--agent-column)) / 2));
 }
@@ -151,6 +152,19 @@ dialog.panel::backdrop { background: transparent; }
 .loader span:nth-child(2) { animation-delay: .2s; }
 .loader span:nth-child(3) { animation-delay: .4s; }
 @keyframes agent-blink { 0%, 80%, 100% { opacity: .2; transform: scale(.7); } 40% { opacity: 1; transform: scale(1); } }
+
+/* ---- suggestions (example prompts, cleared on the first message) ---- */
+.suggestions {
+  flex: none; display: flex; flex-wrap: wrap; gap: 8px;
+  justify-content: flex-end; padding: 0 var(--agent-gutter) 4px;
+}
+.suggestion {
+  border: 1px solid var(--agent-border); background: var(--agent-bg); color: var(--agent-text);
+  border-radius: 999px; padding: 7px 14px; cursor: pointer;
+  font: inherit; font-size: .92em; line-height: 1.4; text-align: left;
+  transition: background .15s;
+}
+.suggestion:hover { background: var(--agent-user-bg); }
 
 /* ---- composer ---- */
 .composer { flex: none; padding: 10px var(--agent-gutter) 14px; }

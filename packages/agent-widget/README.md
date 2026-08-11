@@ -64,6 +64,8 @@ const widget = new Widget({
   subtitle: "AI Agent",             // small line under the title
   placeholder: "Ask anything…",
   greeting: "Hi! How can I help?",  // optional first assistant message (visual only, not sent to the agent)
+  suggestions: ["What can you do?"], // clickable example prompts, shown until the first message
+                                    // (clicking one sends it)
   avatar: "https://…/logo.png",     // image URL or inline emoji/HTML
   launcherIcon: "✨",               // launcher button icon: image URL or inline emoji/HTML
                                     // (defaults to an AI sparkle)
