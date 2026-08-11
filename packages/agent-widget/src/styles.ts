@@ -8,9 +8,9 @@ export const css = `
   --agent-user-bg: #f4f4f5;
   --agent-border: #ececee;
   --agent-code-bg: #f4f4f6;
-  --agent-th: #f7f7f8;
-  --agent-avatar-bg: #f1f1f3;
+  --agent-avatar-bg: var(--agent-user-bg);
   --agent-button-bg: var(--agent-accent);
+  --agent-button-fg: #fff;
   --agent-input-bg: #f7f7f8;
   --agent-radius: 20px;
   --agent-font: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
@@ -34,7 +34,7 @@ export const css = `
 .launcher {
   position: fixed; right: 22px; bottom: 22px; z-index: var(--agent-z);
   width: 56px; height: 56px; border: 0; border-radius: 50%; cursor: pointer;
-  background: var(--agent-button-bg); color: #fff;
+  background: var(--agent-button-bg); color: var(--agent-button-fg);
   display: flex; align-items: center; justify-content: center;
   font-size: 24px; overflow: hidden;
   box-shadow: 0 6px 24px rgba(0, 0, 0, .18);
@@ -71,7 +71,7 @@ dialog.panel::backdrop { background: transparent; }
 
 :host([mode="modal"]) .panel {
   margin: auto; width: min(94vw, 600px); height: min(88dvh, 760px);
-  border-radius: 20px; box-shadow: 0 24px 70px rgba(0, 0, 0, .30);
+  border-radius: var(--agent-radius); box-shadow: 0 24px 70px rgba(0, 0, 0, .30);
 }
 :host([mode="modal"]) .panel::backdrop { background: rgba(20, 20, 22, .40); }
 
@@ -134,12 +134,12 @@ dialog.panel::backdrop { background: transparent; }
 .body ul, .body ol { margin: .5em 0; padding-left: 1.4em; }
 .body li { margin: .2em 0; }
 .body a { color: var(--agent-accent); text-decoration: underline; text-underline-offset: 2px; }
-.body code { background: var(--agent-code-bg); padding: .1em .4em; border-radius: 5px; font-size: .9em; }
-.body pre { background: var(--agent-code-bg); padding: 12px 14px; border-radius: 12px; overflow-x: auto; }
+.body code { background: var(--agent-code-bg); padding: .1em .4em; border-radius: 5px; font-size: .9em; font-family: var(--agent-mono); }
+.body pre { background: var(--agent-code-bg); padding: 12px 14px; border-radius: 12px; overflow-x: auto; font-family: var(--agent-mono); }
 .body pre code { background: none; padding: 0; }
 .body table { border-collapse: collapse; margin: .6em 0; width: 100%; font-size: .94em; }
 .body th, .body td { border: 1px solid var(--agent-border); padding: 6px 10px; text-align: left; }
-.body th { background: var(--agent-th); }
+.body th { background: var(--agent-code-bg); }
 .body hr { border: 0; border-top: 1px solid var(--agent-border); margin: 1.1em 0; }
 .body blockquote { margin: .6em 0; padding: 2px 0 2px 12px; border-left: 3px solid var(--agent-border); color: var(--agent-muted); }
 
@@ -157,9 +157,9 @@ dialog.panel::backdrop { background: transparent; }
 .box {
   display: flex; align-items: flex-end; gap: 8px;
   background: var(--agent-input-bg); border: 1px solid var(--agent-border);
-  border-radius: 26px; padding: 6px 6px 6px 18px; transition: border-color .15s;
+  border-radius: var(--agent-radius); padding: 6px 6px 6px 18px; transition: border-color .15s;
 }
-.box:focus-within { border-color: #d7d7da; }
+.box:focus-within { border-color: color-mix(in srgb, var(--agent-border) 90%, var(--agent-text)); }
 .input {
   flex: 1; min-width: 0;
   background: none; border: 0; color: var(--agent-text); resize: none; outline: none;
@@ -170,7 +170,7 @@ dialog.panel::backdrop { background: transparent; }
 .tools { display: flex; align-items: center; gap: 6px; }
 .send {
   flex: none; width: 36px; height: 36px; border: 0; border-radius: 50%; cursor: pointer;
-  background: var(--agent-button-bg); color: #fff;
+  background: var(--agent-button-bg); color: var(--agent-button-fg);
   display: flex; align-items: center; justify-content: center; transition: background .15s, opacity .15s;
 }
 .send:hover:not(:disabled) { background: color-mix(in srgb, var(--agent-button-bg) 85%, #fff); }

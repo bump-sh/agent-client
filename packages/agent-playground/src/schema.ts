@@ -17,6 +17,8 @@ export interface OptionDef {
   attribute?: string
   /** CSS custom property when the option is a theme token. */
   cssVar?: string
+  /** Effective color shown in the swatch while the value is empty (inherited default). */
+  fallback?: string
 }
 
 export interface Section {
@@ -140,7 +142,17 @@ export const SECTIONS: Section[] = [
         input: "color",
         default: "",
         placeholder: "Accent color",
+        fallback: "#0a0a0a",
         cssVar: "--agent-button-bg",
+      },
+      {
+        key: "theme.buttonFg",
+        label: "Button icons",
+        input: "color",
+        default: "",
+        placeholder: "White",
+        fallback: "#ffffff",
+        cssVar: "--agent-button-fg",
       },
       {
         key: "theme.bg",
@@ -169,6 +181,13 @@ export const SECTIONS: Section[] = [
         input: "color",
         default: "#f4f4f5",
         cssVar: "--agent-user-bg",
+      },
+      {
+        key: "theme.inputBg",
+        label: "Input background",
+        input: "color",
+        default: "#f7f7f8",
+        cssVar: "--agent-input-bg",
       },
       {
         key: "theme.border",

@@ -189,27 +189,28 @@ agent-widget {
 | --------------------- | ----------------------- | --------------------------------------- |
 | `--agent-accent`      | `#0a0a0a`               | Accents: links, and buttons by default  |
 | `--agent-button-bg`   | `var(--agent-accent)`   | Launcher & send button — override to decouple them from the accent |
+| `--agent-button-fg`   | `#fff`                  | Launcher & send button icon             |
 | `--agent-bg`          | `#ffffff`               | Panel background                        |
 | `--agent-text`        | `#0d0d0d`               | Text                                    |
 | `--agent-muted`       | `#8a8a8f`               | Secondary text (subtitle, status…)      |
 | `--agent-user-bg`     | `#f4f4f5`               | User message bubble                     |
 | `--agent-input-bg`    | `#f7f7f8`               | Composer input                          |
 | `--agent-border`      | `#ececee`               | Borders                                 |
-| `--agent-code-bg`     | `#f4f4f6`               | Code blocks                             |
-| `--agent-th`          | `#f7f7f8`               | Table header background                 |
-| `--agent-avatar-bg`   | `#f1f1f3`               | Avatar background                       |
+| `--agent-code-bg`     | `#f4f4f6`               | Code blocks & table headers             |
+| `--agent-avatar-bg`   | `var(--agent-user-bg)`  | Avatar background                       |
 | `--agent-avatar-size` | `28px`                  | Avatar box                              |
 | `--agent-font`        | system sans stack       | Font family                             |
 | `--agent-mono`        | system mono stack       | Code font family                        |
-| `--agent-radius`      | `20px`                  | Corner radius                           |
+| `--agent-radius`      | `20px`                  | Corner radius (user bubble, composer, modal panel) |
 | `--agent-width`       | `26vw`                  | Sidebar width                           |
 | `--agent-gutter`      | `18px`                  | Horizontal padding                      |
 | `--agent-column`      | `760px`                 | Max conversation width (inline)         |
 | `--agent-z`           | `2147483000`            | Stacking order                          |
 
 The `theme` option is a JS shortcut for the most common ones — `accent`,
-`buttonBg`, `bg`, `text`, `muted`, `userBg`, `border`, `codeBg`, `font`,
-`radius`, `width`, `z` — set the rest directly in CSS as above.
+`buttonBg`, `buttonFg`, `bg`, `text`, `muted`, `userBg`, `inputBg`, `border`,
+`codeBg`, `font`, `radius`, `width`, `z` — set the rest directly in CSS as
+above.
 
 Style internal structure with `::part()`:
 

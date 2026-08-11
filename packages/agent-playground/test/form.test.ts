@@ -42,6 +42,20 @@ describe("renderForm", () => {
     expect(field.classList.contains("modified")).toBe(true)
   })
 
+  it("shows the inherited color in the swatch of an empty color field", () => {
+    const root = document.createElement("form")
+    renderForm(
+      root,
+      defaults(),
+      () => {},
+      () => {},
+    )
+    const swatch = fieldLabelled(root, "Button icons").querySelector(
+      ".color-swatch",
+    ) as HTMLInputElement
+    expect(swatch.value).toBe("#ffffff")
+  })
+
   it("gives connection fields and one-click controls no reset affordance", () => {
     const state = {
       ...defaults(),

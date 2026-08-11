@@ -33,9 +33,11 @@ describe("Widget", () => {
   it("applies theme tokens as --agent-* custom properties", () => {
     const chat = new Widget({
       conversation: fakeConversation(),
-      theme: { accent: "#e11d48" },
+      theme: { accent: "#e11d48", buttonFg: "#111111", inputBg: "#fafafa" },
     })
     expect(chat.element.style.getPropertyValue("--agent-accent")).toBe("#e11d48")
+    expect(chat.element.style.getPropertyValue("--agent-button-fg")).toBe("#111111")
+    expect(chat.element.style.getPropertyValue("--agent-input-bg")).toBe("#fafafa")
     chat.destroy()
   })
 

@@ -85,12 +85,13 @@ function colorControl(
   const swatch = el("input", "color-swatch") as HTMLInputElement
   swatch.type = "color"
   const hex = textControl(option, state, onChange) as HTMLInputElement
-  syncSwatch(swatch, hex.value)
+  const sync = () => syncSwatch(swatch, hex.value || option.fallback || "")
+  sync()
   swatch.addEventListener("input", () => {
     hex.value = swatch.value
     hex.dispatchEvent(new Event("input"))
   })
-  hex.addEventListener("input", () => syncSwatch(swatch, hex.value))
+  hex.addEventListener("input", sync)
   wrap.append(swatch, hex)
   return wrap
 }

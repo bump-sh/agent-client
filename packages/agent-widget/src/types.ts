@@ -16,10 +16,14 @@ export interface Theme {
   accent?: string
   /** Launcher & send button background. Defaults to the accent color. */
   buttonBg?: string
+  /** Launcher & send button icon color. Defaults to white. */
+  buttonFg?: string
   bg?: string
   text?: string
   muted?: string
   userBg?: string
+  /** Composer input background. */
+  inputBg?: string
   border?: string
   codeBg?: string
   font?: string
