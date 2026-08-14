@@ -19,6 +19,16 @@
   "engines": {
     "node": ">=18"
   },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bump-sh/agent-client.git",
+    "directory": "packages/agent-conversation"
+  },
+  "homepage": "https://github.com/bump-sh/agent-client/tree/main/packages/agent-conversation#readme",
+  "bugs": "https://github.com/bump-sh/agent-client/issues",
   "scripts": {
     "build": "tsup",
     "test": "vitest run",
