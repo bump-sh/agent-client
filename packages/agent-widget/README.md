@@ -55,6 +55,8 @@ const widget = new Widget({
   token,                            // auth: string | () => string | Promise<string>
   config,                           // agent config → Config-<Key> headers (map or per-request callback)
   headers,                          // extra request headers (map or per-request callback)
+  allowedTools: ["searchDocs"],     // focus the agent on a specific set of tools
+                                    // (specialize it for the UI context it lives in)
   mode: "modal",                    // "modal" | "sidebar" | "inline"
   launcher: true,                   // floating launcher button (modal/sidebar); false to open it yourself
   target: "#app",                   // inline container (selector or element); modal/sidebar → <body>
