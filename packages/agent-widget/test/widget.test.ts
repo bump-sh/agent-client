@@ -142,6 +142,23 @@ describe("Widget", () => {
     chat.destroy()
   })
 
+  it("forwards a list of allowed tools to the built-in conversation as a request body argument", async () => {
+    const fetchMock = vi.fn(async () => new Response('{"type":"done"}\n'))
+    vi.stubGlobal("fetch", fetchMock)
+
+    const chat = new Widget({ endpoint: "/chat", allowedTools: ["doThis"] })
+    for await (const _event of chat.conversation.send("hi")) {
+      // drain the stream so the request actually fires
+    }
+
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body).allowed_tools).toEqual([
+      "doThis",
+    ])
+
+    vi.unstubAllGlobals()
+    chat.destroy()
+  })
+
   it("streams a reply into the thread when a message is sent", async () => {
     const chat = new Widget({ conversation: fakeConversation(), mode: "inline" })
     const shadow = chat.element.shadowRoot as ShadowRoot

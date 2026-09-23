@@ -3,7 +3,7 @@ import type { HeadersProvider, TokenProvider } from "@bump-sh/agent-conversation
 import { Controller } from "./controller.js"
 import { renderMarkdown as defaultMarkdown } from "./markdown.js"
 import { css } from "./styles.js"
-import type { ConversationLike, Labels, Mode, Theme } from "./types.js"
+import type { ConversationLike, Labels, Mode, Theme, WidgetOptions } from "./types.js"
 
 const THEME_VARS: Record<keyof Theme, string> = {
   accent: "--agent-accent",
@@ -76,6 +76,7 @@ export class AgentWidget extends HTMLElement {
   #token?: TokenProvider
   #config: HeadersProvider = {}
   #headers: HeadersProvider = {}
+  #allowedTools: string[] = []
   #mode: Mode = "modal"
   #showLauncher = true
   #titleText = "Assistant"
@@ -102,31 +103,13 @@ export class AgentWidget extends HTMLElement {
   }
 
   /** Apply options from the `Widget` façade. Call before the element is attached. */
-  configure(options: {
-    conversation?: ConversationLike
-    endpoint?: string
-    token?: TokenProvider
-    config?: HeadersProvider
-    headers?: HeadersProvider
-    mode?: Mode
-    launcher?: boolean
-    title?: string
-    subtitle?: string
-    placeholder?: string
-    greeting?: string
-    suggestions?: string[]
-    avatar?: string
-    launcherIcon?: string
-    disclaimer?: string
-    labels?: Labels
-    theme?: Theme
-    renderMarkdown?: (text: string) => string
-  }): this {
+  configure(options: WidgetOptions): this {
     if (options.conversation) this.#providedConversation = options.conversation
     if (options.endpoint) this.setAttribute("endpoint", options.endpoint)
     if (options.token != null) this.#token = options.token
     if (options.config) this.#config = options.config
     if (options.headers) this.#headers = options.headers
+    if (options.allowedTools) this.#allowedTools = options.allowedTools
     this.setAttribute("mode", options.mode ?? this.#mode)
     if (options.launcher === false) this.#showLauncher = false
     if (options.title != null) this.setAttribute("title", options.title)
@@ -162,6 +145,7 @@ export class AgentWidget extends HTMLElement {
         token: this.#token,
         config: this.#config,
         headers: this.#headers,
+        allowedTools: this.#allowedTools,
       })
     }
     return this.#conversationInstance

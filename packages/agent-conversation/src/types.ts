@@ -36,6 +36,8 @@ export interface ConversationOptions {
   config?: HeadersProvider
   /** Extra request headers, merged last. Map, or a callback re-evaluated on every request. */
   headers?: HeadersProvider
+  /** Limit the available tools from the agent in this conversation */
+  allowedTools?: string[]
   /** Custom fetch implementation (SSR, testing). Defaults to global `fetch`. */
   fetch?: typeof fetch
   /** Seed the conversation history. */
