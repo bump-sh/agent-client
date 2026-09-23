@@ -71,6 +71,11 @@ request header and is available in your workflow file as `$config.<key>` —
 and `headers` for any other custom header. Both packages accept a map, or a
 callback re-evaluated on every request.
 
+Pass `allowedTools` to focus the agent on a specific set of tools, sent as
+`allowed_tools` in the request body. Use it to specialize the agent for the
+UI context it lives in — e.g. a documentation page that only needs search
+tools, or a checkout flow that only needs order tools.
+
 ## Playground
 
 **[Try it live →](https://bump-sh.github.io/agent-client/)**
