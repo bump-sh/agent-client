@@ -60,6 +60,8 @@ export interface WidgetOptions {
   config?: HeadersProvider
   /** Extra request headers for the built-in Conversation. Map, or a per-request callback. */
   headers?: HeadersProvider
+  /** Filter the allowed tools that your agent will be able to use in the Conversation */
+  allowedTools?: string[]
   /** Display mode. Defaults to "modal". */
   mode?: Mode
   /** Show the floating launcher button (modal/sidebar). Default true. */

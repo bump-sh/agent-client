@@ -73,6 +73,7 @@ type AgentEvent =
 | `token`    | `string \| () => string \| Promise<string>`   | Bearer token → `Authorization`. A callback is re-evaluated per request, so short-lived tokens refresh. |
 | `config`   | `Record<string, string>` or a callback        | Agent configuration keys, sent as `Config-<Key>` request headers.  |
 | `headers`  | `Record<string, string>` or a callback        | Extra request headers, merged last.                                |
+| `allowedTools` | `string[]`                                | Focus the agent on a specific set of tools, sent as `allowed_tools` in the request body. Defaults to `[]` (no restriction). |
 | `fetch`    | `typeof fetch`                                | Custom fetch (SSR, testing). Defaults to `fetch`.                  |
 | `messages` | `Message[]`                                   | Seed the conversation history (`{ role: "user" \| "assistant", content: string }`). |
 

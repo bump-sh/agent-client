@@ -221,6 +221,30 @@ describe("Conversation", () => {
     expect(init.headers.Authorization).toBeUndefined()
   })
 
+  it("sends allowed_tools in the request body when configured", async () => {
+    const fetchImpl = fetchReturning(['{"type":"done"}\n'])
+    const agent = new Conversation({
+      endpoint: "/chat",
+      fetch: fetchImpl,
+      allowedTools: ["doThis"],
+    })
+
+    await agent.send("hi")
+
+    const init = (fetchImpl as ReturnType<typeof vi.fn>).mock.calls[0][1]
+    expect(JSON.parse(init.body).allowed_tools).toEqual(["doThis"])
+  })
+
+  it("sends an empty allowed_tools (no restriction) when not configured", async () => {
+    const fetchImpl = fetchReturning(['{"type":"done"}\n'])
+    const agent = new Conversation({ endpoint: "/chat", fetch: fetchImpl })
+
+    await agent.send("hi")
+
+    const init = (fetchImpl as ReturnType<typeof vi.fn>).mock.calls[0][1]
+    expect(JSON.parse(init.body).allowed_tools).toEqual([])
+  })
+
   it("forwards the abort signal to fetch", async () => {
     const fetchImpl = fetchReturning(['{"type":"done"}\n'])
     const agent = new Conversation({ endpoint: "/chat", fetch: fetchImpl })

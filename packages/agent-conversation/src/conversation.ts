@@ -70,6 +70,7 @@ export class Conversation {
   #token?: TokenProvider
   #config: HeadersProvider
   #headers: HeadersProvider
+  #allowedTools: string[]
   #fetch: typeof fetch
   #messages: Message[]
   #listeners: { [K in keyof Listeners]: Set<Listeners[K]> } = {
@@ -85,6 +86,7 @@ export class Conversation {
     this.#token = options.token
     this.#config = options.config ?? {}
     this.#headers = options.headers ?? {}
+    this.#allowedTools = options.allowedTools ?? []
     this.#fetch = options.fetch ?? globalThis.fetch
     this.#messages = options.messages ? [...options.messages] : []
   }
@@ -155,6 +157,8 @@ export class Conversation {
     const configHeaders = Object.fromEntries(
       Object.entries(config).map(([key, value]) => [`Config-${key}`, value]),
     )
+    const body = { messages: this.#messages, allowed_tools: this.#allowedTools }
+
     return doFetch(this.#endpoint, {
       method: "POST",
       headers: {
@@ -163,7 +167,7 @@ export class Conversation {
         ...configHeaders,
         ...headers,
       },
-      body: JSON.stringify({ messages: this.#messages }),
+      body: JSON.stringify(body),
       signal,
     })
   }
