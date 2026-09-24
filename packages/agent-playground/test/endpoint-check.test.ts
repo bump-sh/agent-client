@@ -13,21 +13,16 @@ describe("checkEndpoint", () => {
   })
 
   it("accepts an endpoint whose stream starts with an agent event", async () => {
-    vi.stubGlobal("fetch", async () => new Response('{"type":"done"}\n'))
+    vi.stubGlobal(
+      "fetch",
+      async () => new Response('{"name":"My super agent", "tools": ["doThings"]}'),
+    )
     expect(await check()).toBeNull()
   })
 
   it("flags a reachable URL that does not speak the agent protocol", async () => {
     vi.stubGlobal("fetch", async () => new Response("<!doctype html><html>…"))
-    expect(await check()).toContain("not an agent event stream")
-  })
-
-  it("accepts an agent that refuses the empty probe with a JSON 400", async () => {
-    vi.stubGlobal(
-      "fetch",
-      async () => new Response('{"status":400,"error":"Bad Request"}', { status: 400 }),
-    )
-    expect(await check()).toBeNull()
+    expect(await check()).toContain("not an agent description")
   })
 
   it("still flags a 400 whose body is not JSON", async () => {
@@ -56,12 +51,13 @@ describe("checkEndpoint", () => {
   })
 
   it("sends the probe like the widget would, token included", async () => {
-    const fetchMock = vi.fn(async () => new Response('{"type":"done"}\n'))
+    const fetchMock = vi.fn(
+      async () => new Response('{"name":"My super agent", "tools": ["doThings"]}'),
+    )
     vi.stubGlobal("fetch", fetchMock)
     await checkEndpoint("https://x/agent", "s3cret", signal())
     const [, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit]
-    expect(init.method).toBe("POST")
+    expect(init.method).toBe("GET")
     expect((init.headers as Record<string, string>).Authorization).toBe("Bearer s3cret")
-    expect(init.body).toBe('{"messages":[]}')
   })
 })
