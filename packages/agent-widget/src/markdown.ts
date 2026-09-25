@@ -45,7 +45,7 @@ export function renderMarkdown(src: string): string {
       continue
     }
 
-    const heading = line.match(/^(#{1,3})\s+(.*)/)
+    const heading = line.match(/^(#{1,3})\s?(.*)/)
     if (heading) {
       const level = (heading[1] as string).length + 2
       html += `<h${level}>${inline(heading[2] as string)}</h${level}>`
