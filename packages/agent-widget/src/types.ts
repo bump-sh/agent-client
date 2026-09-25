@@ -77,6 +77,8 @@ export interface WidgetOptions {
   placeholder?: string
   /** Optional first assistant message shown before any user input. */
   greeting?: string
+  /** Optional first user message sent after widget is built. */
+  startMessage?: string
   /** Clickable example prompts shown until the first message. Clicking one sends it. */
   suggestions?: string[]
   /** Assistant avatar: an image URL, or inline HTML/emoji. Defaults to a glyph. */
