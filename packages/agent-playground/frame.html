@@ -103,6 +103,14 @@
         box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1);
         cursor: pointer;
       }
+      .trigger.centered {
+        right: 50%;
+        bottom: 50%;
+        transform: translate(+50%, +50%);
+      }
+      .trigger.visible {
+        display: inline-flex;
+      }
       body[data-launcher="off"]:not([data-mode="inline"]) .trigger {
         display: inline-flex;
       }
@@ -117,6 +125,7 @@
       <div class="bar"></div>
     </div>
     <div class="inline-stage" id="inline-stage"></div>
+    <button class="trigger centered" id="refresh" type="button">Refresh the widget</button>
     <button class="trigger" id="trigger" type="button">Open the widget</button>
     <script src="./frame.js" defer></script>
   </body>
