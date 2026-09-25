@@ -83,6 +83,7 @@ export class AgentWidget extends HTMLElement {
   #subtitleText?: string
   #placeholderText = "Ask anything…"
   #greeting?: string
+  #startMessage?: string
   #suggestions: string[] = []
   #avatar?: string
   #launcherIcon?: string
@@ -118,6 +119,7 @@ export class AgentWidget extends HTMLElement {
       this.setAttribute("placeholder", options.placeholder)
     if (options.greeting != null) this.#greeting = options.greeting
     if (options.suggestions) this.#suggestions = options.suggestions
+    if (options.startMessage) this.#startMessage = options.startMessage
     if (options.avatar != null) this.#avatar = options.avatar
     if (options.launcherIcon != null) this.#launcherIcon = options.launcherIcon
     if (options.disclaimer != null) this.#disclaimerText = options.disclaimer
@@ -320,7 +322,13 @@ export class AgentWidget extends HTMLElement {
         // happy-dom / environments without full <dialog> support
       }
     }
-    if (open) this.#input?.focus()
+    if (open && this.#input) {
+      this.#input.focus()
+      if (this.#startMessage) {
+        this.#input.value = this.#startMessage
+        this.#submit()
+      }
+    }
   }
 
   #updateText(): void {

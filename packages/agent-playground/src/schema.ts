@@ -103,6 +103,13 @@ export const SECTIONS: Section[] = [
         placeholder: "Hi! How can I help?",
       },
       {
+        key: "startMessage",
+        label: "Start message",
+        input: "text",
+        default: "",
+        placeholder: "Where to start?",
+      },
+      {
         key: "suggestions",
         label: "Suggested prompts",
         input: "list",

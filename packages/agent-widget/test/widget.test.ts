@@ -167,8 +167,25 @@ describe("Widget", () => {
 
     input.value = "hi"
     form.dispatchEvent(new Event("submit"))
-    await Promise.resolve()
-    await Promise.resolve()
+
+    expect(shadow.querySelector(".turn.user")?.textContent).toBe("hi")
+    await vi_waitFor(
+      () =>
+        shadow.querySelector(".turn.assistant")?.textContent?.includes("Hello") ??
+        false,
+    )
+    chat.destroy()
+  })
+
+  it("streams a reply into the thread when widget is started with initial message", async () => {
+    const chat = new Widget({
+      conversation: fakeConversation(),
+      mode: "inline",
+      startMessage: "hi",
+    })
+    const shadow = chat.element.shadowRoot as ShadowRoot
+    const input = shadow.querySelector(".input") as HTMLTextAreaElement
+    const form = shadow.querySelector(".composer") as HTMLFormElement
 
     expect(shadow.querySelector(".turn.user")?.textContent).toBe("hi")
     await vi_waitFor(

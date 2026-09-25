@@ -13,24 +13,44 @@ declare global {
 }
 
 let widget: Widget | undefined
+let widgetOptions: WidgetOptions | undefined
 let lastMode: string | undefined
 
-window.renderWidget = (state) => {
+window.renderWidget = (state, forceRemount = false) => {
   const mode = String(state.mode)
-  // Entering modal/sidebar starts closed so the launcher (or the stand-in
-  // trigger) is what you see first; option tweaks keep the panel as it was.
-  const open = mode === lastMode && (widget?.element.hasAttribute("open") ?? false)
+  const { startMessage } = state
+  // Entering modal/sidebar starts closed so the launcher (or the
+  // stand-in trigger) is what you see first; option tweaks keep the
+  // panel as it was except if there's a “startMessage” option.
+  const open =
+    mode === lastMode &&
+    !startMessage &&
+    (widget?.element.hasAttribute("open") ?? false)
+  document.querySelector("#refresh").classList.remove("visible")
   widget?.destroy()
   lastMode = mode
   syncStage(state)
-  widget = new Widget({
-    ...(toOptions(state) as WidgetOptions),
-    target: mode === "inline" ? "#inline-stage" : undefined,
-    open,
-  })
+  // Save state for later remount (refresh)
+  widgetOptions = toOptions(state) as WidgetOptions
+
+  // Don't remount Widget if there's a start message in “inline” mode
+  // to avoid creating a conversation with the agent each time there's
+  // a state change.
+  if (mode === "inline" && startMessage && !forceRemount) {
+    document.querySelector("#refresh").classList.add("visible")
+  } else {
+    widget = new Widget({
+      ...widgetOptions,
+      target: mode === "inline" ? "#inline-stage" : undefined,
+      open,
+    })
+  }
 }
 
 document.querySelector("#trigger")?.addEventListener("click", () => widget?.open())
+document.querySelector("#refresh")?.addEventListener("click", () => {
+  window.renderWidget(widgetOptions || {}, true)
+})
 
 function syncStage(state: State): void {
   document.body.dataset.mode = String(state.mode)
