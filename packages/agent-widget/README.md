@@ -78,10 +78,12 @@ const widget = new Widget({
 })
 ```
 
-The instance is the handle:
+The instance has a simple public API:
 
 ```ts
 widget.open(); widget.close(); widget.toggle()
+widget.sendMessage(content) // Programmatically send a message in an open widget
+
 widget.destroy()      // remove the element from the page
 widget.conversation   // the underlying Conversation (history, events, reset)
 widget.element        // the <agent-widget> DOM element
