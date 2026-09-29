@@ -37,5 +37,5 @@
     "format": "biome format --write src test",
     "prepublishOnly": "npm run build"
   },
-  "keywords": ["bump.sh", "agent", "mcp", "chat", "streaming", "ndjson"]
+  "keywords": ["bump.sh", "agent", "mcp", "chat", "streaming", "ag-ui"]
 }

@@ -128,7 +128,9 @@ describe("Widget", () => {
   })
 
   it("forwards a token to the built-in conversation as an Authorization header", async () => {
-    const fetchMock = vi.fn(async () => new Response('{"type":"done"}\n'))
+    const fetchMock = vi.fn(
+      async () => new Response('data: {"type":"RUN_FINISHED"}\n\n'),
+    )
     vi.stubGlobal("fetch", fetchMock)
 
     const chat = new Widget({ endpoint: "/chat", token: "s3cret" })
@@ -142,8 +144,10 @@ describe("Widget", () => {
     chat.destroy()
   })
 
-  it("forwards a list of allowed tools to the built-in conversation as a request body argument", async () => {
-    const fetchMock = vi.fn(async () => new Response('{"type":"done"}\n'))
+  it("forwards a list of allowed tools to the built-in conversation as a run property", async () => {
+    const fetchMock = vi.fn(
+      async () => new Response('data: {"type":"RUN_FINISHED"}\n\n'),
+    )
     vi.stubGlobal("fetch", fetchMock)
 
     const chat = new Widget({ endpoint: "/chat", allowedTools: ["doThis"] })
@@ -151,9 +155,26 @@ describe("Widget", () => {
       // drain the stream so the request actually fires
     }
 
-    expect(JSON.parse(fetchMock.mock.calls[0][1].body).allowed_tools).toEqual([
-      "doThis",
-    ])
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body).forwardedProps).toEqual({
+      allowedTools: ["doThis"],
+    })
+
+    vi.unstubAllGlobals()
+    chat.destroy()
+  })
+
+  it("leaves every tool available when none is listed", async () => {
+    const fetchMock = vi.fn(
+      async () => new Response('data: {"type":"RUN_FINISHED"}\n\n'),
+    )
+    vi.stubGlobal("fetch", fetchMock)
+
+    const chat = new Widget({ endpoint: "/chat" })
+    for await (const _event of chat.conversation.send("hi")) {
+      // drain the stream so the request actually fires
+    }
+
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body).forwardedProps).toEqual({})
 
     vi.unstubAllGlobals()
     chat.destroy()

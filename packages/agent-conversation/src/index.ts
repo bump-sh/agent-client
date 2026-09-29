@@ -5,6 +5,9 @@ export type {
   HeadersProvider,
   Message,
   Role,
+  RunAgentInput,
+  SeedMessage,
   SendOptions,
   TokenProvider,
+  ToolCall,
 } from "./types.js"
