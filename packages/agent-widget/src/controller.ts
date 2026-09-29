@@ -39,13 +39,13 @@ export class Controller {
     const { body, aside } = this.#assistantTurn()
 
     let acc = ""
-    let liveTool = ""
+    let liveTools: string[] = []
     let done = false
     let errorMessage: string | null = null
 
     const paint = () => {
       body.innerHTML = this.#options.render(acc)
-      aside.innerHTML = done ? "" : this.#liveStatus(liveTool)
+      aside.innerHTML = done ? "" : this.#liveStatus(liveTools)
       this.#scroll()
     }
     paint()
@@ -53,12 +53,11 @@ export class Controller {
     try {
       for await (const event of this.#conversation().send(content)) {
         if (event.type === "text") {
-          liveTool = ""
+          liveTools = []
           acc += event.delta
           paint()
         } else if (event.type === "tool") {
-          if (acc && !acc.endsWith("\n\n")) acc += "\n\n"
-          liveTool = escapeHtml(event.names.join(", ").replace(/_/g, " "))
+          liveTools.push(event.name)
           paint()
         } else if (event.type === "error") {
           errorMessage = "Something went wrong."
@@ -77,8 +76,9 @@ export class Controller {
     }
   }
 
-  #liveStatus(tool: string): string {
-    const label = tool ? `${TOOL_ICON}<span class="status-label">${tool}</span>` : ""
+  #liveStatus(tools: string[]): string {
+    const names = escapeHtml(tools.join(", ").replace(/_/g, " "))
+    const label = names ? `${TOOL_ICON}<span class="status-label">${names}</span>` : ""
     return `<div class="status" part="status">${label}${SPINNER}</div>`
   }
 
