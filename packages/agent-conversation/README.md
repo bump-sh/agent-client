@@ -51,17 +51,20 @@ Same call — iterate it instead of awaiting:
 ```ts
 for await (const event of conversation.send("What's the weather in Paris?")) {
   if (event.type === "text") append(event.delta)
-  if (event.type === "tool") showToolActivity(event.names)
+  if (event.type === "tool") showToolActivity(event.name)
   if (event.type === "error") showError(event.error)
 }
 ```
 
 ```ts
 type AgentEvent =
-  | { type: "text"; delta: string }   // a chunk of the assistant reply
-  | { type: "tool"; names: string[] } // the agent started running these tools
-  | { type: "error"; error: Error }   // the turn failed (network or agent error)
+  | { type: "text"; delta: string }  // a chunk of the assistant reply
+  | { type: "tool"; name: string }   // the agent started running this tool
+  | { type: "error"; error: Error }  // the turn failed (network or agent error)
 ```
+
+When the agent speaks again after running tools, a `"\n\n"` delta opens the
+new paragraph: concatenating every delta gives the same reply `await` resolves to.
 
 ## API
 
@@ -73,9 +76,9 @@ type AgentEvent =
 | `token`    | `string \| () => string \| Promise<string>`   | Bearer token → `Authorization`. A callback is re-evaluated per request, so short-lived tokens refresh. |
 | `config`   | `Record<string, string>` or a callback        | Agent configuration keys, sent as `Config-<Key>` request headers.  |
 | `headers`  | `Record<string, string>` or a callback        | Extra request headers, merged last.                                |
-| `allowedTools` | `string[]`                                | Focus the agent on a specific set of tools, sent as `allowed_tools` in the request body. Defaults to `[]` (no restriction). |
+| `allowedTools` | `string[]`                                | Focus the agent on a specific set of tools, sent as `forwardedProps.allowedTools`. Left out, every tool is available. |
 | `fetch`    | `typeof fetch`                                | Custom fetch (SSR, testing). Defaults to `fetch`.                  |
-| `messages` | `Message[]`                                   | Seed the conversation history (`{ role: "user" \| "assistant", content: string }`). |
+| `messages` | `SeedMessage[]`                               | Seed the conversation history (`{ role: "user" \| "assistant", content: string }`). |
 
 ### `conversation.send(content, { signal? })`
 
@@ -113,21 +116,22 @@ to iterating. Returns an unsubscribe function.
 | event       | handler payload    | fires                                                        |
 | ----------- | ------------------ | ------------------------------------------------------------ |
 | `"text"`    | `delta: string`    | For each chunk of the assistant reply.                       |
-| `"tool"`    | `names: string[]`  | When the agent starts running tools.                         |
+| `"tool"`    | `name: string`     | When the agent starts running a tool.                        |
 | `"error"`   | `error: Error`     | On a network or agent error.                                 |
 | `"message"` | `content: string`  | When a turn ends, with the full assistant reply (`""` if the turn failed before any text). |
 | `"done"`    | —                  | When a turn ends, success or failure.                        |
 
 ```ts
-const off = conversation.on("tool", (names) => console.log("running", names))
+const off = conversation.on("tool", (name) => console.log("running", name))
 off() // stop listening
 ```
 
 ### `conversation.messages` / `conversation.reset()`
 
-`messages` is a read-only snapshot of the history (user and assistant turns) —
-the user turn is recorded as soon as you call `send()`, the assistant turn when
-its reply finishes. `reset()` clears the history to start fresh.
+`messages` is a read-only snapshot of the history, in the AG-UI shape sent to
+the agent: user, assistant (with their `toolCalls`) and tool messages, each
+with an `id`. The user turn is recorded as soon as you call `send()`, the
+assistant turn as it streams. `reset()` clears the history to start fresh.
 
 ## Authentication
 
@@ -171,34 +175,39 @@ locales, URLs) — encode anything richer yourself.
 
 ## Error handling
 
-A failed turn (non-2xx response, network failure, agent error, abort)
-surfaces three ways — pick the one matching how you consume the stream:
+A failed turn (non-2xx response, network failure, agent error, stream cut
+before `RUN_FINISHED`, abort) surfaces three ways — pick the one matching how
+you consume the stream:
 
 - `await conversation.send(…)` **rejects** with the `Error`;
 - iterating yields an `{ type: "error", error }` event and the stream ends;
 - `on("error", handler)` fires.
 
-Any text streamed before the failure is kept in `conversation.messages`, so
-the history stays consistent with what the user saw.
+A failed turn leaves nothing but the user message in `conversation.messages`:
+a reply cut short (a tool call without its result) is one the agent would
+refuse on the next turn.
 
 ## Wire protocol
 
-The client speaks the Bump.sh agent API protocol: it `POST`s
-`{ "messages": [{ "role", "content" }] }` as JSON — the full history, every
-turn — and reads an `application/x-ndjson` response, one JSON event per line:
+The client speaks [AG-UI](https://docs.ag-ui.com): each `send()` is one run.
+It `POST`s a [`RunAgentInput`](https://docs.ag-ui.com/sdk/js/core/types#runagentinput)
+as JSON — `threadId`, `runId`, the full
+`messages` history and `forwardedProps.allowedTools` — and reads a
+`text/event-stream` response, one JSON event per `data:` frame:
 
 ```
-{ "type": "text",  "content": "It's sunny" }
-{ "type": "tool",  "names": ["get_weather"] }
-{ "type": "error", "content": "…" }
-{ "type": "done" }
+RUN_STARTED → TEXT_MESSAGE_START / CONTENT / END → TOOL_CALL_START / ARGS / END
+→ TOOL_CALL_RESULT → RUN_FINISHED | RUN_ERROR
 ```
+
+The agent runs its tools itself and reports them as they go. Any AG-UI client
+(CopilotKit, assistant-ui…) can talk to the same endpoint.
 
 ## Exports
 
 `Conversation`, `StreamResult`, and the types `AgentEvent`,
-`ConversationOptions`, `HeadersProvider`, `Message`, `Role`, `SendOptions`,
-`TokenProvider`. ESM and CJS builds are shipped.
+`ConversationOptions`, `HeadersProvider`, `Message`, `Role`, `RunAgentInput`, `SeedMessage`,
+`SendOptions`, `TokenProvider`, `ToolCall`. ESM and CJS builds are shipped.
 
 ## License
 

@@ -22,7 +22,7 @@ describe("Controller", () => {
   it("renders a user turn then streams the assistant reply", async () => {
     const thread = document.createElement("div")
     const agent = fakeAgent([
-      { type: "tool", names: ["get_weather"] },
+      { type: "tool", name: "get_weather" },
       { type: "text", delta: "Sunny in Paris" },
     ])
 
@@ -55,17 +55,19 @@ describe("Controller", () => {
     expect(assistant?.textContent).toBe("Something went wrong.")
   })
 
-  it("breaks the paragraph between text sent before and after a tool call", async () => {
+  it("lists every tool of a turn in the status while they run", async () => {
     const thread = document.createElement("div")
-    const agent = fakeAgent([
-      { type: "text", delta: "Checking now!" },
-      { type: "tool", names: ["get_weather"] },
-      { type: "text", delta: "Here it is." },
-    ])
+    let status = ""
+    const agent: ConversationLike = {
+      async *send(): AsyncGenerator<AgentEvent> {
+        yield { type: "tool", name: "get_weather" }
+        yield { type: "tool", name: "get_forecast" }
+        status = thread.querySelector(".status-label")?.textContent ?? ""
+      },
+    }
 
     await new Controller(thread, () => agent, options).send("weather?")
 
-    const body = thread.querySelectorAll(".turn")[1]?.querySelector(".body")
-    expect(body?.textContent).toBe("Checking now!\n\nHere it is.")
+    expect(status).toBe("get weather, get forecast")
   })
 })
