@@ -160,6 +160,21 @@ export class AgentWidget extends HTMLElement {
   toggle(): void {
     this.hasAttribute("open") ? this.close() : this.open()
   }
+  /** Public API to send message dynamically. Internally used by the
+   * composer and the suggestion chips. */
+  async sendMessage(content: string): Promise<void> {
+    if (!content || this.#busy) return
+    this.#busy = true
+    this.#syncSend()
+    this.shadowRoot?.querySelector(".suggestions")?.remove()
+    try {
+      await (this.#controller as Controller).send(content)
+    } finally {
+      this.#busy = false
+      this.#syncSend()
+      this.#input?.focus()
+    }
+  }
 
   connectedCallback(): void {
     this.#readAttributes()
@@ -295,7 +310,7 @@ export class AgentWidget extends HTMLElement {
       ?.addEventListener("submit", (e) => this.#submit(e))
     shadow.querySelectorAll(".suggestion").forEach((chip, index) => {
       chip.addEventListener("click", () =>
-        this.#sendMessage(this.#suggestions[index] ?? ""),
+        this.sendMessage(this.#suggestions[index] ?? ""),
       )
     })
     this.#input?.addEventListener("input", () => this.#syncSend())
@@ -351,22 +366,7 @@ export class AgentWidget extends HTMLElement {
     const content = input.value.trim()
     if (!content || this.#busy) return
     input.value = ""
-    await this.#sendMessage(content)
-  }
-
-  /** Shared send path for the composer and the suggestion chips. */
-  async #sendMessage(content: string): Promise<void> {
-    if (!content || this.#busy) return
-    this.#busy = true
-    this.#syncSend()
-    this.shadowRoot?.querySelector(".suggestions")?.remove()
-    try {
-      await (this.#controller as Controller).send(content)
-    } finally {
-      this.#busy = false
-      this.#syncSend()
-      this.#input?.focus()
-    }
+    await this.sendMessage(content)
   }
 }
 

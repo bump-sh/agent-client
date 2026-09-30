@@ -40,6 +40,14 @@ export class Widget {
     return this.#element.conversation
   }
 
+  async sendMessage(content: string): Promise<void> {
+    if (this.#element.hasAttribute("open")) {
+      return this.#element.sendMessage(content)
+    }
+
+    return Promise.resolve()
+  }
+
   open(): void {
     this.#element.open()
   }
