@@ -3,7 +3,9 @@
   "private": true,
   "type": "module",
   "license": "MIT",
-  "workspaces": ["packages/*"],
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "build": "npm run build --workspaces --if-present",
     "playground": "npm run dev -w @bump-sh/agent-playground",
@@ -13,9 +15,10 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
-    "happy-dom": "^15.11.7",
+    "esbuild": "0.28.2",
+    "happy-dom": "^20.14.5",
     "tsup": "^8.3.5",
     "typescript": "^5.7.2",
-    "vitest": "^2.1.8"
+    "vitest": "^5.0.2"
   }
 }
