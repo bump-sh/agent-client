@@ -1,7 +1,7 @@
 {
   "name": "@bump-sh/agent-playground",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.2.0",
   "description": "Interactive configurator for @bump-sh/agent-widget — tweak options, see the widget live, copy the code.",
   "type": "module",
   "scripts": {
@@ -14,7 +14,7 @@
     "node": ">=18"
   },
   "devDependencies": {
-    "@bump-sh/agent-widget": "^0.1.0",
+    "@bump-sh/agent-widget": "^0.2.0",
     "esbuild": "^0.28.2"
   }
 }
