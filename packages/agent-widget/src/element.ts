@@ -76,7 +76,7 @@ export class AgentWidget extends HTMLElement {
   #token?: TokenProvider
   #config: HeadersProvider = {}
   #headers: HeadersProvider = {}
-  #allowedTools: string[] = []
+  #allowedTools?: string[]
   #mode: Mode = "modal"
   #showLauncher = true
   #titleText = "Assistant"

@@ -8,7 +8,7 @@ npm workspaces monorepo with two layers you can use together or on their own.
 
 | Package | What it does |
 | ------- | ------------ |
-| [`@bump-sh/agent-conversation`](packages/agent-conversation) | Tiny, dependency-free client: streams a stateful conversation with an agent endpoint over NDJSON. The logic, no UI. |
+| [`@bump-sh/agent-conversation`](packages/agent-conversation) | Tiny, dependency-free client: streams a stateful conversation with an agent endpoint over [AG-UI](https://docs.ag-ui.com). The logic, no UI. |
 | [`@bump-sh/agent-widget`](packages/agent-widget) | Embeddable, themeable chat widget (Web Component) built on `agent-conversation`. The UI. |
 
 Two layers, one mental model: a **`Conversation`** talks to the agent and holds the
@@ -72,7 +72,7 @@ and `headers` for any other custom header. Both packages accept a map, or a
 callback re-evaluated on every request.
 
 Pass `allowedTools` to focus the agent on a specific set of tools, sent as
-`allowed_tools` in the request body. Use it to specialize the agent for the
+`forwardedProps.allowedTools` of the run. Use it to specialize the agent for the
 UI context it lives in — e.g. a documentation page that only needs search
 tools, or a checkout flow that only needs order tools.
 
