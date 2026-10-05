@@ -1,4 +1,7 @@
 import { defineConfig } from "tsup"
+import pkg from "./package.json"
+
+const banner = { js: `/*! ${pkg.name} v${pkg.version} — ${pkg.license} */` }
 
 export default defineConfig([
   {
@@ -8,6 +11,7 @@ export default defineConfig([
     clean: true,
     sourcemap: true,
     target: "es2022",
+    banner,
     // @bump-sh/agent-conversation stays external here (a regular dependency).
   },
   {
@@ -20,5 +24,6 @@ export default defineConfig([
     minify: true,
     sourcemap: true,
     target: "es2022",
+    banner,
   },
 ])
