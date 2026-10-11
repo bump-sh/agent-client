@@ -57,7 +57,8 @@ const widget = new Widget({
   headers,                          // extra request headers (map or per-request callback)
   allowedTools: ["searchDocs"],     // focus the agent on a specific set of tools
                                     // (specialize it for the UI context it lives in)
-  agentContext: {Locale: "en-gb"}   // Define an application context for the agent to know
+  frontendTools: [/* … */],         // tools of your page the agent may call, see Frontend tools
+  agentContext: {Locale: "en-gb"},  // Define an application context for the agent to know
                                     // where it lives. Set key-value pairs as a context object.
   mode: "modal",                    // "modal" | "sidebar" | "inline"
   launcher: true,                   // floating launcher button (modal/sidebar); false to open it yourself
@@ -85,6 +86,9 @@ The instance has a simple public API:
 ```ts
 widget.open(); widget.close(); widget.toggle()
 widget.sendMessage(content) // Programmatically send a message in an open widget
+
+widget.addFrontendTool(tool)          // let the agent call a tool of the page
+widget.removeFrontendTool(name)       // …and stop it
 
 widget.destroy()      // remove the element from the page
 widget.conversation   // the underlying Conversation (history, events, reset)
@@ -143,6 +147,75 @@ new Widget({
 })
 ```
 
+### Frontend tools
+
+Let the agent act on your page: frontend tools are functions of your page the
+agent may call.
+
+```ts
+const widget = new Widget({
+  endpoint,
+  frontendTools: [
+    {
+      name: "get_selection",
+      description: "Get the rows the user selected in the table",
+      execute: () => table.selectedRows(),
+    },
+  ],
+})
+
+// or from the part of the page that owns the tool, while it is on screen:
+widget.addFrontendTool({
+  name: "apply_search",
+  description: "Show the results of a product search on the page",
+  parameters: {
+    type: "object",
+    properties: { query: { type: "string" } },
+    required: ["query"],
+  },
+  execute: ({ query }) => applySearch(query),
+  confirm: "Search “{args.query}”",
+})
+widget.removeFrontendTool("apply_search")
+```
+
+#### Defining a Frontend Tool
+
+| property      | type                           | description                                                                                                                                                                                                                                                             |
+|---------------|--------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `name`        | `string` (required)            | Letters, digits, `_` or `-` (64 characters at most). It must differ from the agent's server tools names: the agent refuses the run otherwise. A frontend tool name should never be set in `allowedTools`, which is used to limit the **server tools** only.               |
+| `description` | `string` (required)            | What the tool does and when to use it: the agent decides from this text.                                                                                                                                                                                                |
+| `execute`     | `function` (required)          | The javascript code you want to run when this tool is called                                                                                                                                                                                                            |
+| `parameters`  | `object`                       | A JSON schema describing the input arguments of the `execute` function. The arguments passed to the `execute` function are validated with this schema before called by the agent.                                                                                       |
+| `confirm`     | `string` \| `(args) => string` | Define a confirmation label if you need the call to be confirmed by the user before it executes. Either a fixed string, or a template accepting `{args.x}` syntax to read arguments values passed to the execute function, or a javascript function `(args) => string`. |
+
+Use the tool `name` value if you need to remove it from an existing conversation.
+
+The `execute` function's return value is what the agent reads:
+- `undefined` will read as `"Done."`
+- a string text is returned as is
+- anything else is stringified as JSON
+
+If the function throws an error it is reported to the agent, which tells
+the user.
+
+An optional `parameters` should be defined (as a JSON schema) if the `execute` function takes arguments.
+
+An optional `confirm` label can be set if the frontend tool should be confirmed by the user.
+
+A frontend tool executes either:
+- **Right away** (no `confirm`): it executes as soon as the agent calls it, and
+  the agent goes on with its result — within the same `send()`, as one reply.
+- **Once confirmed** (with `confirm`, the label of the button): the
+  confirmation yields a `{ type: "confirmation", confirmation }`
+  event. Where `confirmation` has a `label` to render as a button; and
+  an `accept()` method which executes the tool and records its result,
+  without calling the agent again — it reads the result on the next
+  message. The next `send()` dismisses a confirmation left pending,
+  and waits for a confirmed tool still executing. `accept()` rejects
+  when the tool throws, or when it does not run: accepted already,
+  dismissed, or the tool removed.
+
 ### Markdown rendering
 
 The built-in renderer is intentionally tiny and dependency-free: it escapes all
@@ -178,7 +251,9 @@ new Widget({ conversation })
 ```
 
 Anything with a `send(content): AsyncIterable<AgentEvent>` works
-(`ConversationLike`), so you can also wrap or mock it.
+(`ConversationLike`), so you can also wrap or mock it. The widget's frontend
+tools are added to the conversation, which then needs `addFrontendTool` and
+`removeFrontendTool`.
 
 ## Theming
 
@@ -229,7 +304,10 @@ agent-widget::part(message-user) { background: #eef; }
 
 Parts: `launcher`, `panel`, `header`, `title`, `subtitle`, `close`, `thread`,
 `message`, `message-user`, `message-assistant`, `avatar`, `composer`,
-`input`, `send`, `status`, `disclaimer`.
+`input`, `send`, `status`, `action`, `action-confirmation`,
+`disclaimer`.
+
+Action buttons (`action`) use the `--agent-button-*` tokens.
 
 Replace whole regions with slots: `title`, `empty` (empty-thread state),
 `composer-actions` (left of the send button).
@@ -257,7 +335,8 @@ Replace whole regions with slots: `title`, `empty` (empty-thread state),
 - `defineAgentWidget(tag?)` — register the element, optionally under a custom
   tag name (idempotent; called automatically on import).
 - `renderMarkdown` — the built-in safe renderer, reusable on its own.
-- Types: `WidgetOptions`, `ConversationLike`, `Labels`, `Mode`, `Theme`.
+- Types: `WidgetOptions`, `ConversationLike`, `Labels`, `Mode`, `Theme`,
+  `ButtonLabel`, `FrontendTool`, `ToolConfirmation`.
 
 ## License
 

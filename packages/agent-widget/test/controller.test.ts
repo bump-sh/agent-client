@@ -1,5 +1,5 @@
-import type { AgentEvent } from "@bump-sh/agent-conversation"
-import { describe, expect, it } from "vitest"
+import type { AgentEvent, ToolConfirmation } from "@bump-sh/agent-conversation"
+import { describe, expect, it, vi } from "vitest"
 import { Controller } from "../src/controller.js"
 import type { ConversationLike } from "../src/types.js"
 
@@ -70,4 +70,83 @@ describe("Controller", () => {
 
     expect(status).toBe("get weather, get forecast")
   })
+
+  it("keeps the assistant turn busy until its reply has streamed", async () => {
+    const thread = document.createElement("div")
+    let busyWhileStreaming: string | null | undefined
+    const agent = {
+      async *send(): AsyncGenerator<AgentEvent> {
+        yield { type: "text", delta: "Sunny" }
+        busyWhileStreaming = thread
+          .querySelector(".turn.assistant")
+          ?.getAttribute("aria-busy")
+      },
+    }
+
+    await new Controller(thread, () => agent, options).send("weather?")
+
+    expect(busyWhileStreaming).toBe("true")
+    expect(thread.querySelector(".turn.assistant")?.hasAttribute("aria-busy")).toBe(
+      false,
+    )
+  })
+
+  it("renders a confirmation that executes the tool on click", async () => {
+    const thread = document.createElement("div")
+    const confirmation = askedConfirmation(async () => {})
+    const agent = fakeAgent([{ type: "confirmation", confirmation }])
+
+    await new Controller(thread, () => agent, options).send("find shoes")
+    const button = thread.querySelector<HTMLButtonElement>(".action-confirmation")
+    button?.click()
+    await vi.waitFor(() => expect(button?.dataset.state).toBe("done"))
+
+    expect(button?.textContent).toBe("Search shoes")
+    expect(button?.getAttribute("part")).toBe("action action-confirmation")
+    expect(button?.disabled).toBe(true)
+    expect(confirmation.accept).toHaveBeenCalledOnce()
+  })
+
+  it("marks a confirmation whose tool failed, and reports the error", async () => {
+    const thread = document.createElement("div")
+    const reportError = vi.fn()
+    vi.stubGlobal("reportError", reportError)
+    const confirmation = askedConfirmation(async () => {
+      throw new Error("no page")
+    })
+    const agent = fakeAgent([{ type: "confirmation", confirmation }])
+
+    await new Controller(thread, () => agent, options).send("find shoes")
+    const button = thread.querySelector<HTMLButtonElement>(".action-confirmation")
+    button?.click()
+
+    await vi.waitFor(() => expect(button?.dataset.state).toBe("failed"))
+    expect(reportError).toHaveBeenCalledWith(new Error("no page"))
+    vi.unstubAllGlobals()
+  })
+
+  it("dismisses the confirmations left pending when the next message is sent", async () => {
+    const thread = document.createElement("div")
+    const confirmation = askedConfirmation(async () => {})
+    const agent = fakeAgent([{ type: "confirmation", confirmation }])
+    const controller = new Controller(thread, () => agent, options)
+
+    await controller.send("find shoes")
+    await controller.send("never mind")
+
+    const [dismissed, fresh] =
+      thread.querySelectorAll<HTMLButtonElement>(".action-confirmation")
+    expect(dismissed?.disabled).toBe(true)
+    expect(dismissed?.dataset.state).toBe("dismissed")
+    expect(fresh?.disabled).toBe(false)
+  })
 })
+
+function askedConfirmation(accept: () => Promise<void>): ToolConfirmation {
+  return {
+    name: "apply_search",
+    args: { query: "shoes" },
+    label: "Search shoes",
+    accept: vi.fn(accept),
+  }
+}

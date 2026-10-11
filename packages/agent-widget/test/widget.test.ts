@@ -1,6 +1,6 @@
 import type { AgentEvent } from "@bump-sh/agent-conversation"
 import { describe, expect, it, vi } from "vitest"
-import { Widget } from "../src/index.js"
+import { type AgentWidget, Widget } from "../src/index.js"
 import type { ConversationLike } from "../src/types.js"
 
 function fakeConversation(): ConversationLike {
@@ -186,6 +186,71 @@ describe("Widget", () => {
     chat.destroy()
   })
 
+  it("declares the frontend tools to the agent through the built-in conversation", async () => {
+    const fetchMock = vi.fn(
+      async () => new Response('data: {"type":"RUN_FINISHED"}\n\n'),
+    )
+    vi.stubGlobal("fetch", fetchMock)
+    const getSelection = {
+      name: "get_selection",
+      description: "Rows",
+      execute: () => [],
+    }
+    const applySearch = {
+      name: "apply_search",
+      description: "Search",
+      execute: () => {},
+    }
+
+    const chat = new Widget({ endpoint: "/chat", frontendTools: [getSelection] })
+    chat.addFrontendTool(applySearch)
+    await chat.conversation.send("hi")
+    chat.removeFrontendTool("apply_search")
+    await chat.conversation.send("again")
+
+    expect(declaredToolNames(fetchMock, 0)).toEqual(["get_selection", "apply_search"])
+    expect(declaredToolNames(fetchMock, 1)).toEqual(["get_selection"])
+
+    vi.unstubAllGlobals()
+    chat.destroy()
+  })
+
+  it("keeps the frontend tools when the endpoint changes", async () => {
+    const fetchMock = vi.fn(
+      async () => new Response('data: {"type":"RUN_FINISHED"}\n\n'),
+    )
+    vi.stubGlobal("fetch", fetchMock)
+    const tool = { name: "get_selection", description: "Rows", execute: () => [] }
+
+    const chat = new Widget({ endpoint: "/chat", frontendTools: [tool] })
+    chat.element.setAttribute("endpoint", "/other")
+    await chat.conversation.send("hi")
+
+    expect(declaredToolNames(fetchMock, 0)).toEqual(["get_selection"])
+
+    vi.unstubAllGlobals()
+    chat.destroy()
+  })
+
+  it("refuses, on every use, frontend tools added before the endpoint and invalid", () => {
+    const tool = { name: "get selection", description: "Rows", execute: () => [] }
+    const element = document.createElement("agent-widget") as AgentWidget
+    element.addFrontendTool(tool)
+    element.setAttribute("endpoint", "/chat")
+
+    expect(() => element.conversation).toThrow(/Frontend tool "get selection"/)
+    expect(() => element.conversation).toThrow(/Frontend tool "get selection"/)
+  })
+
+  it("refuses frontend tools for a provided conversation that does not take them", () => {
+    const conversation = { send: async function* () {} }
+    const tool = { name: "get_selection", description: "Rows", execute: () => [] }
+
+    expect(() => new Widget({ conversation, frontendTools: [tool] })).toThrow(
+      /does not take frontend tools/,
+    )
+  })
+
   it("leaves every tool available when none is listed", async () => {
     const fetchMock = vi.fn(
       async () => new Response('data: {"type":"RUN_FINISHED"}\n\n'),
@@ -231,4 +296,10 @@ async function vi_waitFor(check: () => boolean, tries = 20): Promise<void> {
     await new Promise((r) => setTimeout(r, 5))
   }
   throw new Error("condition not met in time")
+}
+
+// biome-ignore lint/suspicious/noExplicitAny: the recorded fetch calls are untyped
+function declaredToolNames(fetchMock: any, call: number): string[] {
+  const body = JSON.parse(fetchMock.mock.calls[call][1].body)
+  return body.tools.map((tool: { name: string }) => tool.name)
 }

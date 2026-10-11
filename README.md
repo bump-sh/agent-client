@@ -76,8 +76,12 @@ Pass `allowedTools` to focus the agent on a specific set of tools, sent as
 UI context it lives in — e.g. a documentation page that only needs search
 tools, or a checkout flow that only needs order tools.
 
+Pass `frontendTools` to let the agent act on your page: functions it decides to
+call, executed right away or once the user confirms them with a button. See the
+[widget README](packages/agent-widget/README.md#frontend-tools).
+
 Pass `agentContext` to give information about the current page for the
-agent to know where it lives. Optional list of key-value pairs.
+agent to know where it lives. Optional key-value pairs object.
 
 ## Playground
 
