@@ -7,6 +7,7 @@
     "packages/*"
   ],
   "scripts": {
+    "all": "npm run build && npm run check && npm run test",
     "build": "npm run build --workspaces --if-present",
     "playground": "npm run dev -w @bump-sh/agent-playground",
     "test": "npm run test --workspaces --if-present",

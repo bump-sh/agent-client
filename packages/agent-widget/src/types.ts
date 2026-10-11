@@ -1,6 +1,7 @@
 import type {
   AgentContext,
   AgentEvent,
+  FrontendTool,
   HeadersProvider,
   TokenProvider,
 } from "@bump-sh/agent-conversation"
@@ -10,6 +11,9 @@ export type Mode = "modal" | "sidebar" | "inline"
 /** The minimal shape the widget needs from a conversation. `Conversation` satisfies it. */
 export interface ConversationLike {
   send(content: string): AsyncIterable<AgentEvent>
+  /** Needed for the widget's frontend tools only. */
+  addFrontendTool?(tool: FrontendTool): void
+  removeFrontendTool?(name: string): void
 }
 
 /** Theme tokens. Each maps to a `--agent-*` CSS custom property on the host. */
@@ -63,6 +67,11 @@ export interface WidgetOptions {
   headers?: HeadersProvider
   /** Filter the allowed tools that your agent will be able to use in the Conversation */
   allowedTools?: string[]
+  /**
+   * Tools of your page the agent may call, executed right away or once the user
+   * confirms them. Same as `addFrontendTool`. See the README's "Frontend tools".
+   */
+  frontendTools?: FrontendTool[]
   /** Define an application context for the agent to know where it lives. */
   agentContext?: AgentContext
   /** Display mode. Defaults to "modal". */

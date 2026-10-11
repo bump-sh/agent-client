@@ -1,6 +1,7 @@
 import { Conversation } from "@bump-sh/agent-conversation"
 import type {
   AgentContext,
+  FrontendTool,
   HeadersProvider,
   TokenProvider,
 } from "@bump-sh/agent-conversation"
@@ -43,6 +44,19 @@ const iconHtml = (value: string | undefined, fallback: string): string => {
   return value
 }
 
+type FrontendToolsTaker = Required<
+  Pick<ConversationLike, "addFrontendTool" | "removeFrontendTool">
+>
+
+/** The provided conversation, refusing one that does not take frontend tools. */
+function takingFrontendTools(conversation: ConversationLike): FrontendToolsTaker {
+  if (!conversation.addFrontendTool || !conversation.removeFrontendTool)
+    throw new Error(
+      "agent-widget: the provided conversation does not take frontend tools.",
+    )
+  return conversation as FrontendToolsTaker
+}
+
 let sheet: CSSStyleSheet | undefined
 const supportsAdopted = (): boolean =>
   typeof CSSStyleSheet !== "undefined" &&
@@ -75,12 +89,14 @@ export class AgentWidget extends HTMLElement {
   ]
 
   #providedConversation?: ConversationLike
-  #conversationInstance?: ConversationLike
+  #conversationInstance?: Conversation
   #endpoint?: string
   #token?: TokenProvider
   #config: HeadersProvider = {}
   #headers: HeadersProvider = {}
   #allowedTools?: string[]
+  /** The frontend tools by name, handed to each conversation built from `endpoint`. */
+  #frontendTools = new Map<string, FrontendTool>()
   #agentContext?: AgentContext
   #mode: Mode = "modal"
   #showLauncher = true
@@ -115,6 +131,7 @@ export class AgentWidget extends HTMLElement {
     if (options.config) this.#config = options.config
     if (options.headers) this.#headers = options.headers
     if (options.allowedTools) this.#allowedTools = options.allowedTools
+    for (const tool of options.frontendTools ?? []) this.addFrontendTool(tool)
     if (options.agentContext) this.#agentContext = options.agentContext
     this.setAttribute("mode", options.mode ?? this.#mode)
     if (options.launcher === false) this.#showLauncher = false
@@ -142,20 +159,46 @@ export class AgentWidget extends HTMLElement {
 
   /** The conversation in use — provided, or built lazily from `endpoint`. */
   get conversation(): ConversationLike {
-    if (this.#providedConversation) return this.#providedConversation
-    if (!this.#conversationInstance) {
-      if (!this.#endpoint)
-        throw new Error("agent-widget: set `endpoint` or provide a `conversation`.")
-      this.#conversationInstance = new Conversation({
-        endpoint: this.#endpoint,
-        token: this.#token,
-        config: this.#config,
-        headers: this.#headers,
-        allowedTools: this.#allowedTools,
-        agentContext: this.#agentContext,
-      })
+    return this.#providedConversation ?? this.#builtConversation()
+  }
+
+  #builtConversation(): Conversation {
+    if (this.#conversationInstance) return this.#conversationInstance
+    if (!this.#endpoint)
+      throw new Error("agent-widget: set `endpoint` or provide a `conversation`.")
+    const conversation = new Conversation({
+      endpoint: this.#endpoint,
+      token: this.#token,
+      config: this.#config,
+      headers: this.#headers,
+      allowedTools: this.#allowedTools,
+      agentContext: this.#agentContext,
+    })
+    for (const tool of this.#frontendTools.values()) conversation.addFrontendTool(tool)
+    this.#conversationInstance = conversation
+    return conversation
+  }
+
+  /** Let the agent call a tool of the page. See the README's "Frontend tools". */
+  addFrontendTool(tool: FrontendTool): void {
+    if (this.#providedConversation) {
+      takingFrontendTools(this.#providedConversation).addFrontendTool(tool)
+      return
     }
-    return this.#conversationInstance
+    if (this.#frontendTools.has(tool.name))
+      throw new Error(`Frontend tool "${tool.name}" is declared twice`)
+    if (this.#endpoint) this.#builtConversation().addFrontendTool(tool)
+    this.#frontendTools.set(tool.name, tool)
+  }
+
+  /** Stop the agent calling a tool of the page. */
+  removeFrontendTool(name: string): void {
+    if (this.#providedConversation) {
+      takingFrontendTools(this.#providedConversation).removeFrontendTool(name)
+      return
+    }
+    this.#frontendTools.delete(name)
+    this.#conversationInstance?.removeFrontendTool(name)
   }
 
   open(): void {

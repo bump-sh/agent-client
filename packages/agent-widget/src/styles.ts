@@ -21,6 +21,7 @@ export const css = `
   /* Layout scale — one source of truth, no per-element pixel nudging. */
   --agent-gutter: 18px;       /* horizontal padding of header, thread, composer */
   --agent-avatar-size: 28px;  /* avatar box; assistant rows align against it */
+  --agent-action-height: 36px; /* action buttons under a reply */
   --agent-column: 760px;      /* readable conversation width in inline */
 
   font-family: var(--agent-font);
@@ -152,6 +153,24 @@ dialog.panel::backdrop { background: transparent; }
 .loader span:nth-child(2) { animation-delay: .2s; }
 .loader span:nth-child(3) { animation-delay: .4s; }
 @keyframes agent-blink { 0%, 80%, 100% { opacity: .2; transform: scale(.7); } 40% { opacity: 1; transform: scale(1); } }
+
+/* ---- action buttons (frontend tool confirmations) ---- */
+.actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.actions:empty, .turn[aria-busy="true"] .actions { display: none; }
+/* Without text, the first row of buttons centers on the avatar. */
+.body:empty + .actions { margin-top: calc((var(--agent-avatar-size) - var(--agent-action-height)) / 2); }
+.action {
+  border: 1px solid var(--agent-button-bg); background: var(--agent-button-bg); color: var(--agent-button-fg);
+  min-height: var(--agent-action-height); border-radius: 999px; padding: 4px 14px; cursor: pointer;
+  font: inherit; font-size: .92em; line-height: 1.4; text-align: left;
+  transition: background-color .15s, color .15s, border-color .15s, opacity .15s;
+}
+.action:hover:enabled { background: color-mix(in srgb, var(--agent-button-bg) 85%, #fff); }
+.action:disabled { cursor: default; background: var(--agent-bg); color: var(--agent-muted); border-color: var(--agent-border); }
+.action[aria-busy="true"] { cursor: progress; }
+.action[data-state="done"]::before { content: "✓ "; }
+.action[data-state="failed"]::before { content: "✕ "; }
+.action[data-state="dismissed"] { opacity: .6; }
 
 /* ---- suggestions (example prompts, cleared on the first message) ---- */
 .suggestions {

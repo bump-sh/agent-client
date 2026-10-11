@@ -1,3 +1,4 @@
+import type { FrontendTool } from "@bump-sh/agent-conversation"
 import { type AgentWidget, defineAgentWidget } from "./element.js"
 import type { ConversationLike, WidgetOptions } from "./types.js"
 
@@ -19,7 +20,8 @@ function resolveTarget(options: WidgetOptions): HTMLElement {
  * new Widget({ endpoint: "https://host/agent" })
  * ```
  *
- * The instance is the handle: `open()`, `close()`, `toggle()`, `destroy()`, `conversation`.
+ * The instance is the handle: `open()`, `close()`, `toggle()`, `addFrontendTool()`,
+ * `removeFrontendTool()`, `destroy()`, `conversation`.
  */
 export class Widget {
   #element: AgentWidget
@@ -46,6 +48,16 @@ export class Widget {
     }
 
     return Promise.resolve()
+  }
+
+  /** Let the agent call a tool of the page. */
+  addFrontendTool(tool: FrontendTool): void {
+    this.#element.addFrontendTool(tool)
+  }
+
+  /** Stop the agent calling a tool of the page. */
+  removeFrontendTool(name: string): void {
+    this.#element.removeFrontendTool(name)
   }
 
   open(): void {
