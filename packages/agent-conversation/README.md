@@ -60,26 +60,114 @@ for await (const event of conversation.send("What's the weather in Paris?")) {
 type AgentEvent =
   | { type: "text"; delta: string }  // a chunk of the assistant reply
   | { type: "tool"; name: string }   // the agent started running this tool
+  | { type: "confirmation"; confirmation: ToolConfirmation } // see Frontend tools
   | { type: "error"; error: Error }  // the turn failed (network or agent error)
 ```
 
 When the agent speaks again after running tools, a `"\n\n"` delta opens the
 new paragraph: concatenating every delta gives the same reply `await` resolves to.
 
+## Frontend tools
+
+Let the agent act on your page by defining `frontendTools`. Those are
+javascript functions of your page the agent may call, offered to it on
+every run right next to its server tools.
+
+```ts
+const conversation = new Conversation({
+  endpoint,
+  frontendTools: [
+    {
+      name: "get_selection",
+      description: "Get the rows the user selected in the table",
+      execute: () => table.selectedRows(),
+    },
+    {
+      name: "apply_search",
+      description: "Show the results of a product search on the page",
+      parameters: {
+        type: "object",
+        properties: { query: { type: "string" } },
+        required: ["query"],
+      },
+      execute: ({ query }) => applySearch(query),
+      confirm: "Search “{args.query}”",
+    },
+  ],
+})
+
+// or later, for a part of the page that comes and goes:
+conversation.addFrontendTool(tool)
+conversation.removeFrontendTool("apply_search")
+```
+
+### Defining a Frontend Tool
+
+| property      | type                           | description                                                                                                                                                                                                                                                             |
+|---------------|--------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `name`        | `string` (required)            | Letters, digits, `_` or `-` (64 characters at most). It must differ from the agent's server tools names: the agent refuses the run otherwise. A frontend tool name should never be set in `allowedTools`, which is used to limit the **server tools** only.             |
+| `description` | `string` (required)            | What the tool does and when to use it: the agent decides from this text.                                                                                                                                                                                                |
+| `execute`     | `function` (required)          | The javascript code you want to run when this tool is called                                                                                                                                                                                                            |
+| `parameters`  | `object`                       | A JSON schema describing the input arguments of the `execute` function. The arguments passed to the `execute` function are validated with this schema before called by the agent.                                                                                       |
+| `confirm`     | `string` \| `(args) => string` | Define a confirmation label if you need the call to be confirmed by the user before it executes. Either a fixed string, or a template accepting `{args.x}` syntax to read arguments values passed to the execute function, or a javascript function `(args) => string`. |
+
+Use the tool `name` value if you need to remove it from an existing conversation.
+
+The `execute` function's return value is what the agent reads:
+- `undefined` will read as `"Done."`
+- a string text is returned as is
+- anything else is stringified as JSON
+
+If the function throws an error it is reported to the agent, which tells
+the user.
+
+An optional `parameters` should be defined (as a JSON schema) if the `execute` function takes arguments.
+
+An optional `confirm` label can be set if the frontend tool should be confirmed by the user.
+
+A frontend tool then executes either:
+- **Right away** (no `confirm`): it executes as soon as the agent calls it, and
+  the agent goes on with its result — within the same `send()`, as one reply.
+- **Once confirmed** (with `confirm`, the label of the button): the
+  confirmation yields a `{ type: "confirmation", confirmation }`
+  event. Where `confirmation` has a `label` to render as a button; and
+  an `accept()` method which executes the tool and records its result,
+  without calling the agent again — it reads the result on the next
+  message. The next `send()` dismisses a confirmation left pending,
+  and waits for a confirmed tool still executing. `accept()` rejects
+  when the tool throws, or when it does not run: accepted already,
+  dismissed, or the tool removed.
+
+### Rules
+
+- A reply chains at most 10 runs on frontend tools, then fails: a
+  model calling them in a loop cannot spend requests forever. When a
+  run fails, the tools executed by the runs before it stay recorded,
+  so the agent does not run them twice.
+
+- Tools are declared to the agent on each run, so adding or removing
+  one applies from the next run. A call to a removed tool, or a
+  pending confirmation of it, is answered as unavailable.
+
+- For a tool to be confirmed, the conversation adds how confirmations
+  behave, so the agent calls the tool to offer the confirmation action
+  to the user instead of asking first.
+
 ## API
 
 ### `new Conversation(options)`
 
-| option         | type                                        | description                                                                                                           |
-|----------------|---------------------------------------------|-----------------------------------------------------------------------------------------------------------------------|
-| `endpoint`     | `string` (required)                         | The agent endpoint URL to POST to.                                                                                    |
-| `token`        | `string \| () => string \| Promise<string>` | Bearer token → `Authorization`. A callback is re-evaluated per request, so short-lived tokens refresh.                |
-| `config`       | `Record<string, string>` or a callback      | Agent configuration keys, sent as `Config-<Key>` request headers.                                                     |
-| `headers`      | `Record<string, string>` or a callback      | Extra request headers, merged last.                                                                                   |
-| `allowedTools` | `string[]`                                  | Focus the agent on a specific set of tools, sent as `forwardedProps.allowedTools`. Left out, every tool is available. |
-| `agentContext` | `Record<string, string>`                    | Define application context for the agent to know where it lives. Optional list of key-value pairs.                    |
-| `fetch`        | `typeof fetch`                              | Custom fetch (SSR, testing). Defaults to `fetch`.                                                                     |
-| `messages`     | `SeedMessage[]`                             | Seed the conversation history (`{ role: "user" \| "assistant", content: string }`).                                   |
+| option          | type                                        | description                                                                                                           |
+|-----------------|---------------------------------------------|-----------------------------------------------------------------------------------------------------------------------|
+| `endpoint`      | `string` (required)                         | The agent endpoint URL to POST to.                                                                                    |
+| `token`         | `string \| () => string \| Promise<string>` | Bearer token → `Authorization`. A callback is re-evaluated per request, so short-lived tokens refresh.                |
+| `config`        | `Record<string, string>` or a callback      | Agent configuration keys, sent as `Config-<Key>` request headers.                                                     |
+| `headers`       | `Record<string, string>` or a callback      | Extra request headers, merged last.                                                                                   |
+| `allowedTools`  | `string[]`                                  | Focus the agent on a specific set of tools, sent as `forwardedProps.allowedTools`. Left out, every tool is available. |
+| `frontendTools` | `FrontendTool[]`                            | Tools of your page the agent may call. See [Frontend tools](#frontend-tools).                                         |
+| `agentContext`  | `Record<string, string>`                    | Define application context for the agent to know where it lives. Optional list of key-value pairs.                    |
+| `fetch`         | `typeof fetch`                              | Custom fetch (SSR, testing). Defaults to `fetch`.                                                                     |
+| `messages`      | `SeedMessage[]`                             | Seed the conversation history (`{ role: "user" \| "assistant", content: string }`).                                   |
 
 ### `conversation.send(content, { signal? })`
 
@@ -118,6 +206,7 @@ to iterating. Returns an unsubscribe function.
 | ----------- | ------------------ | ------------------------------------------------------------ |
 | `"text"`    | `delta: string`    | For each chunk of the assistant reply.                       |
 | `"tool"`    | `name: string`     | When the agent starts running a tool.                        |
+| `"confirmation"` | `confirmation: ToolConfirmation` | When a frontend tool call waits for the user to confirm it. |
 | `"error"`   | `error: Error`     | On a network or agent error.                                 |
 | `"message"` | `content: string`  | When a turn ends, with the full assistant reply (`""` if the turn failed before any text). |
 | `"done"`    | —                  | When a turn ends, success or failure.                        |
@@ -126,6 +215,11 @@ to iterating. Returns an unsubscribe function.
 const off = conversation.on("tool", (name) => console.log("running", name))
 off() // stop listening
 ```
+
+### `conversation.addFrontendTool(tool)` / `conversation.removeFrontendTool(name)`
+
+Lets the agent call a tool of the page from its next run on, or stops it. See
+[Frontend tools](#frontend-tools).
 
 ### `conversation.messages` / `conversation.reset()`
 
@@ -193,7 +287,7 @@ refuse on the next turn.
 The client speaks [AG-UI](https://docs.ag-ui.com): each `send()` is one run.
 It `POST`s a [`RunAgentInput`](https://docs.ag-ui.com/sdk/js/core/types#runagentinput)
 as JSON — `threadId`, `runId`, the full
-`messages` history and `forwardedProps.allowedTools` — and reads a
+`messages` history, the frontend `tools` and `forwardedProps.allowedTools` — and reads a
 `text/event-stream` response, one JSON event per `data:` frame:
 
 ```
@@ -201,14 +295,17 @@ RUN_STARTED → TEXT_MESSAGE_START / CONTENT / END → TOOL_CALL_START / ARGS / 
 → TOOL_CALL_RESULT → RUN_FINISHED | RUN_ERROR
 ```
 
-The agent runs its tools itself and reports them as they go. Any AG-UI client
+The agent runs its server tools itself and reports them as they go. A frontend
+tool call ends the run without a result: the client answers it with a tool
+message in the next run. Any AG-UI client
 (CopilotKit, assistant-ui…) can talk to the same endpoint.
 
 ## Exports
 
-`Conversation`, `StreamResult`, and the types `AgentEvent`, `AgentContext`,
-`ConversationOptions`, `HeadersProvider`, `Message`, `Role`, `RunAgentInput`, `SeedMessage`,
-`SendOptions`, `TokenProvider`, `ToolCall`. ESM and CJS builds are shipped.
+`Conversation`, `StreamResult`, `resolveLabel`, and the types `AgentEvent`, `AgentContext`,
+`ButtonLabel`, `ConversationOptions`, `FrontendTool`, `HeadersProvider`,
+`Message`, `Role`, `RunAgentInput`, `SeedMessage`, `SendOptions`,
+`TokenProvider`, `ToolArgs`, `ToolCall`, `ToolConfirmation`. ESM and CJS builds are shipped.
 
 ## License
 
