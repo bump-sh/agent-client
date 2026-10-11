@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest"
 import { Conversation } from "../src/conversation.js"
-import type { AgentEvent, Message } from "../src/types.js"
+import type { AgentEvent, Message, ToolConfirmation } from "../src/types.js"
 
 describe("Conversation", () => {
   it("accumulates text and resolves to the final reply", async () => {
@@ -429,12 +429,314 @@ describe("Conversation", () => {
 
     expect(requestInit(fetchImpl).signal).toBe(controller.signal)
   })
+
+  describe("frontend tools", () => {
+    it("declares them to the agent, executes the ones it calls and goes on with their results", async () => {
+      const execute = vi.fn(() => ["row 1", "row 2"])
+      const fetchImpl = fetchReturningRuns(
+        [...frontendToolCall("call_1", "get_selection", "{}"), ...finished],
+        reply("2 rows selected"),
+      )
+      const agent = new Conversation({
+        endpoint: "/agent",
+        fetch: fetchImpl,
+        frontendTools: [
+          { name: "get_selection", description: "Selected rows", execute },
+        ],
+      })
+
+      const result = await agent.send("what did I select?")
+
+      expect(result).toBe("2 rows selected")
+      expect(execute).toHaveBeenCalledWith({})
+      expect(requestBody(fetchImpl, 0).tools).toEqual([
+        {
+          name: "get_selection",
+          description: "Selected rows",
+          parameters: { type: "object", properties: {} },
+        },
+      ])
+      expect(requestBody(fetchImpl, 1).messages.at(-1)).toEqual({
+        id: expect.any(String),
+        role: "tool",
+        toolCallId: "call_1",
+        content: '["row 1","row 2"]',
+      })
+    })
+
+    it("tells the agent the error of a frontend tool that throws", async () => {
+      const fetchImpl = fetchReturningRuns(
+        [...frontendToolCall("call_1", "get_selection", "{}"), ...finished],
+        reply("It failed"),
+      )
+      const execute = () => {
+        throw new Error("no table")
+      }
+      const agent = new Conversation({
+        endpoint: "/agent",
+        fetch: fetchImpl,
+        frontendTools: [
+          { name: "get_selection", description: "Selected rows", execute },
+        ],
+      })
+
+      expect(await agent.send("what did I select?")).toBe("It failed")
+      expect(requestBody(fetchImpl, 1).messages.at(-1).content).toBe("Error: no table")
+    })
+
+    it("asks to confirm a call, executed once accepted, without calling the agent again", async () => {
+      const execute = vi.fn()
+      const fetchImpl = fetchReturningRuns([
+        ...frontendToolCall("call_1", "apply_search", '{"query":"shoes"}'),
+        ...finished,
+      ])
+      const agent = new Conversation({
+        endpoint: "/agent",
+        fetch: fetchImpl,
+        frontendTools: [
+          {
+            name: "apply_search",
+            description: "Search the page",
+            execute,
+            confirm: "Search {args.query}",
+          },
+        ],
+      })
+      let confirmation: ToolConfirmation | undefined
+      agent.on("confirmation", (asked) => {
+        confirmation = asked
+      })
+
+      await agent.send("find shoes")
+      expect(confirmation).toMatchObject({
+        name: "apply_search",
+        label: "Search shoes",
+      })
+      expect(execute).not.toHaveBeenCalled()
+
+      await confirmation?.accept()
+      await expect(confirmation?.accept()).rejects.toThrow(/no longer pending/)
+
+      expect(execute).toHaveBeenCalledOnce()
+      expect(execute).toHaveBeenCalledWith({ query: "shoes" })
+      expect(fetchImpl).toHaveBeenCalledOnce()
+      expect(agent.messages.at(-1)).toMatchObject({
+        toolCallId: "call_1",
+        content: "Done.",
+      })
+      expect(requestBody(fetchImpl, 0).tools[0].description).toMatch(
+        /^Search the page\n\nCalling this tool asks the user to confirm it/,
+      )
+    })
+
+    it("dismisses a confirmation left pending when the next message is sent", async () => {
+      const execute = vi.fn()
+      const fetchImpl = fetchReturningRuns(
+        [...frontendToolCall("call_1", "apply_search", "{}"), ...finished],
+        reply("ok"),
+      )
+      const agent = new Conversation({
+        endpoint: "/agent",
+        fetch: fetchImpl,
+        frontendTools: [
+          { name: "apply_search", description: "Search", execute, confirm: "Search" },
+        ],
+      })
+      const confirmations: ToolConfirmation[] = []
+      agent.on("confirmation", (confirmation) => confirmations.push(confirmation))
+
+      await agent.send("find shoes")
+      await agent.send("never mind")
+      await expect(confirmations[0]?.accept()).rejects.toThrow(/no longer pending/)
+
+      expect(execute).not.toHaveBeenCalled()
+      expect(toolResults(requestBody(fetchImpl, 1))).toEqual([
+        "Not run: the user did not confirm it.",
+      ])
+    })
+
+    it("does not execute a call whose confirmation label does not resolve", async () => {
+      const execute = vi.fn()
+      const fetchImpl = fetchReturningRuns(
+        [...frontendToolCall("call_1", "apply_search", "{}"), ...finished],
+        reply("I could not"),
+      )
+      const agent = new Conversation({
+        endpoint: "/agent",
+        fetch: fetchImpl,
+        frontendTools: [
+          {
+            name: "apply_search",
+            description: "Search",
+            execute,
+            confirm: "{args.query}",
+          },
+        ],
+      })
+
+      expect(await agent.send("find shoes")).toBe("I could not")
+      expect(execute).not.toHaveBeenCalled()
+      expect(toolResults(requestBody(fetchImpl, 1))).toEqual([
+        "Not run: its confirmation could not be offered to the user.",
+      ])
+    })
+
+    it("stops declaring a removed tool, and answers its calls as unavailable", async () => {
+      const execute = vi.fn()
+      const fetchImpl = fetchReturningRuns(
+        [...frontendToolCall("call_1", "apply_search", "{}"), ...finished],
+        reply("It is gone"),
+      )
+      const agent = new Conversation({ endpoint: "/agent", fetch: fetchImpl })
+      agent.addFrontendTool({ name: "apply_search", description: "Search", execute })
+
+      agent.removeFrontendTool("apply_search")
+      await agent.send("find shoes")
+
+      expect(execute).not.toHaveBeenCalled()
+      expect(requestBody(fetchImpl, 0).tools).toEqual([])
+      expect(toolResults(requestBody(fetchImpl, 1))).toEqual([
+        "Not run: this tool is no longer available on the page.",
+      ])
+    })
+
+    it("records the result of a confirmed tool still executing before the next run", async () => {
+      let finish = () => {}
+      const execute = () =>
+        new Promise<void>((resolve) => {
+          finish = resolve
+        })
+      const fetchImpl = fetchReturningRuns(
+        [...frontendToolCall("call_1", "apply_search", "{}"), ...finished],
+        reply("ok"),
+      )
+      const agent = new Conversation({
+        endpoint: "/agent",
+        fetch: fetchImpl,
+        frontendTools: [
+          { name: "apply_search", description: "Search", execute, confirm: "Search" },
+        ],
+      })
+      const confirmations: ToolConfirmation[] = []
+      agent.on("confirmation", (confirmation) => confirmations.push(confirmation))
+
+      await agent.send("find shoes")
+      const accepted = confirmations[0]?.accept()
+      const next = agent.send("and socks")
+      finish()
+      await Promise.all([accepted, next])
+
+      expect(
+        requestBody(fetchImpl, 1).messages.map((m: Message) => [m.role, m.content]),
+      ).toEqual([
+        ["user", "find shoes"],
+        ["assistant", ""],
+        ["tool", "Done."],
+        ["user", "and socks"],
+      ])
+    })
+
+    it("keeps the tools executed by earlier runs when a later run fails", async () => {
+      const execute = vi.fn(() => "added")
+      const fetchImpl = fetchReturningRuns(
+        [...frontendToolCall("call_1", "add_to_cart", "{}"), ...finished],
+        [{ type: "RUN_ERROR", message: "boom" }],
+      )
+      const agent = new Conversation({
+        endpoint: "/agent",
+        fetch: fetchImpl,
+        frontendTools: [{ name: "add_to_cart", description: "Add", execute }],
+      })
+
+      await expect(agent.send("add shoes")).rejects.toThrow("boom")
+
+      expect(agent.messages.map((m) => [m.role, m.content])).toEqual([
+        ["user", "add shoes"],
+        ["assistant", ""],
+        ["tool", "added"],
+      ])
+    })
+
+    it("stops a reply whose runs keep calling frontend tools", async () => {
+      let calls = 0
+      const fetchImpl = vi.fn(async () => {
+        const run = [
+          ...frontendToolCall(`call_${++calls}`, "get_selection", "{}"),
+          ...finished,
+        ]
+        return new Response(
+          run.map((event) => `data: ${JSON.stringify(event)}\n\n`).join(""),
+        )
+      }) as unknown as typeof fetch
+      const agent = new Conversation({
+        endpoint: "/agent",
+        fetch: fetchImpl,
+        frontendTools: [
+          { name: "get_selection", description: "Rows", execute: () => [] },
+        ],
+      })
+
+      await expect(agent.send("loop")).rejects.toThrow(/10 runs in a row/)
+      expect(fetchImpl).toHaveBeenCalledTimes(10)
+    })
+
+    it("does not execute a call whose arguments are not valid JSON", async () => {
+      const execute = vi.fn()
+      const fetchImpl = fetchReturningRuns(
+        [...frontendToolCall("call_1", "apply_search", '{"query":'), ...finished],
+        reply("Sorry"),
+      )
+      const agent = new Conversation({
+        endpoint: "/agent",
+        fetch: fetchImpl,
+        frontendTools: [{ name: "apply_search", description: "Search", execute }],
+      })
+
+      expect(await agent.send("find shoes")).toBe("Sorry")
+      expect(execute).not.toHaveBeenCalled()
+      expect(toolResults(requestBody(fetchImpl, 1))).toEqual([
+        "Not run: its arguments are not valid JSON.",
+      ])
+    })
+
+    it("refuses frontend tools the agent would refuse", () => {
+      const tool = { name: "apply_search", description: "Search", execute: () => {} }
+      const invalid = [
+        { frontendTools: [{ ...tool, name: "apply search" }] },
+        { frontendTools: [tool, tool] },
+        { frontendTools: [tool], allowedTools: ["apply_search"] },
+      ]
+
+      for (const options of invalid) {
+        expect(() => new Conversation({ endpoint: "/agent", ...options })).toThrow(
+          /Frontend tool "apply/,
+        )
+      }
+    })
+  })
 })
 
 /** A fake `fetch` streaming the given AG-UI events back as server-sent events. */
 function fetchReturning(events: object[]): typeof fetch {
   const body = events.map((event) => `data: ${JSON.stringify(event)}\n\n`).join("")
   return vi.fn(async () => new Response(body)) as unknown as typeof fetch
+}
+
+/** A fake `fetch` answering each request with the events of the next run. */
+function fetchReturningRuns(...runs: object[][]): typeof fetch {
+  const bodies = runs.map((events) =>
+    events.map((event) => `data: ${JSON.stringify(event)}\n\n`).join(""),
+  )
+  return vi.fn(async () => new Response(bodies.shift())) as unknown as typeof fetch
+}
+
+/** A tool call without result, as a frontend tool's is. */
+function frontendToolCall(id: string, name: string, args: string): object[] {
+  return [
+    { type: "TOOL_CALL_START", toolCallId: id, toolCallName: name },
+    { type: "TOOL_CALL_ARGS", toolCallId: id, delta: args },
+    { type: "TOOL_CALL_END", toolCallId: id },
+  ]
 }
 
 const finished = [{ type: "RUN_FINISHED" }]
@@ -484,4 +786,12 @@ function requestInit(fetchImpl: typeof fetch, call = 0): any {
 // biome-ignore lint/suspicious/noExplicitAny: parsed JSON body
 function requestBody(fetchImpl: typeof fetch, call = 0): any {
   return JSON.parse(requestInit(fetchImpl, call).body)
+}
+
+/** The contents of the tool messages of a run's input. */
+// biome-ignore lint/suspicious/noExplicitAny: parsed JSON body
+function toolResults(body: any): string[] {
+  return body.messages
+    .filter((message: Message) => message.role === "tool")
+    .map((message: Message) => message.content)
 }
