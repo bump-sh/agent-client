@@ -1,4 +1,5 @@
 import type {
+  AgentContext,
   AgentEvent,
   HeadersProvider,
   TokenProvider,
@@ -62,6 +63,8 @@ export interface WidgetOptions {
   headers?: HeadersProvider
   /** Filter the allowed tools that your agent will be able to use in the Conversation */
   allowedTools?: string[]
+  /** Define an application context for the agent to know where it lives. */
+  agentContext?: AgentContext
   /** Display mode. Defaults to "modal". */
   mode?: Mode
   /** Show the floating launcher button (modal/sidebar). Default true. */

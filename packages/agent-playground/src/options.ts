@@ -14,6 +14,7 @@ export function toOptions(state: State): Options {
     const value = state[option.key]
     if (value === option.default) continue
     if (option.input === "list") setList(options, option.key, String(value))
+    else if (option.input === "record") setRecord(options, option.key, String(value))
     else setPath(options, option.key, value)
   }
   return options
@@ -26,6 +27,16 @@ function setList(target: Options, key: string, value: string): void {
     .map((line) => line.trim())
     .filter(Boolean)
   if (items.length > 0) setPath(target, key, items)
+}
+
+/** A record option holds one key:value pair per line in the form; emit it as a clean object. */
+function setRecord(target: Options, key: string, value: string): void {
+  const items = value
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => line.split(": ", 2))
+  if (items.length > 0) setPath(target, key, Object.fromEntries(items))
 }
 
 function setPath(target: Options, key: string, value: unknown): void {

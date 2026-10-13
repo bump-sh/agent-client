@@ -58,6 +58,7 @@ function control(option: OptionDef, state: State, onChange: () => void): HTMLEle
   if (option.input === "segmented") return segmentedControl(option, state, onChange)
   if (option.input === "color") return colorControl(option, state, onChange)
   if (option.input === "list") return listControl(option, state, onChange)
+  if (option.input === "record") return listControl(option, state, onChange)
   return textControl(option, state, onChange)
 }
 

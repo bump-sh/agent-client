@@ -110,6 +110,13 @@ export const SECTIONS: Section[] = [
         placeholder: "One prompt per line",
       },
       {
+        key: "agentContext",
+        label: "Agent context",
+        input: "record",
+        default: "",
+        placeholder: "One “Key: value” per line",
+      },
+      {
         key: "disclaimer",
         label: "Disclaimer",
         input: "text",
