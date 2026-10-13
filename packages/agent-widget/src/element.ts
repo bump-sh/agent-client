@@ -1,5 +1,9 @@
 import { Conversation } from "@bump-sh/agent-conversation"
-import type { HeadersProvider, TokenProvider } from "@bump-sh/agent-conversation"
+import type {
+  AgentContext,
+  HeadersProvider,
+  TokenProvider,
+} from "@bump-sh/agent-conversation"
 import { Controller } from "./controller.js"
 import { renderMarkdown as defaultMarkdown } from "./markdown.js"
 import { css } from "./styles.js"
@@ -77,6 +81,7 @@ export class AgentWidget extends HTMLElement {
   #config: HeadersProvider = {}
   #headers: HeadersProvider = {}
   #allowedTools?: string[]
+  #agentContext?: AgentContext
   #mode: Mode = "modal"
   #showLauncher = true
   #titleText = "Assistant"
@@ -110,6 +115,7 @@ export class AgentWidget extends HTMLElement {
     if (options.config) this.#config = options.config
     if (options.headers) this.#headers = options.headers
     if (options.allowedTools) this.#allowedTools = options.allowedTools
+    if (options.agentContext) this.#agentContext = options.agentContext
     this.setAttribute("mode", options.mode ?? this.#mode)
     if (options.launcher === false) this.#showLauncher = false
     if (options.title != null) this.setAttribute("title", options.title)
@@ -146,6 +152,7 @@ export class AgentWidget extends HTMLElement {
         config: this.#config,
         headers: this.#headers,
         allowedTools: this.#allowedTools,
+        agentContext: this.#agentContext,
       })
     }
     return this.#conversationInstance

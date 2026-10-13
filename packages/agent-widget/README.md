@@ -57,6 +57,8 @@ const widget = new Widget({
   headers,                          // extra request headers (map or per-request callback)
   allowedTools: ["searchDocs"],     // focus the agent on a specific set of tools
                                     // (specialize it for the UI context it lives in)
+  agentContext: {Locale: "en-gb"}   // Define an application context for the agent to know
+                                    // where it lives. Set key-value pairs as a context object.
   mode: "modal",                    // "modal" | "sidebar" | "inline"
   launcher: true,                   // floating launcher button (modal/sidebar); false to open it yourself
   target: "#app",                   // inline container (selector or element); modal/sidebar → <body>

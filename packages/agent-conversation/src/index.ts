@@ -1,6 +1,7 @@
 export { Conversation, StreamResult } from "./conversation.js"
 export type {
   AgentEvent,
+  AgentContext,
   ConversationOptions,
   HeadersProvider,
   Message,

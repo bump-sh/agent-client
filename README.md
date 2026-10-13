@@ -76,6 +76,9 @@ Pass `allowedTools` to focus the agent on a specific set of tools, sent as
 UI context it lives in — e.g. a documentation page that only needs search
 tools, or a checkout flow that only needs order tools.
 
+Pass `agentContext` to give information about the current page for the
+agent to know where it lives. Optional list of key-value pairs.
+
 ## Playground
 
 **[Try it live →](https://bump-sh.github.io/agent-client/)**

@@ -70,15 +70,16 @@ new paragraph: concatenating every delta gives the same reply `await` resolves t
 
 ### `new Conversation(options)`
 
-| option     | type                                          | description                                                        |
-| ---------- | --------------------------------------------- | ------------------------------------------------------------------ |
-| `endpoint` | `string` (required)                           | The agent endpoint URL to POST to.                                 |
-| `token`    | `string \| () => string \| Promise<string>`   | Bearer token → `Authorization`. A callback is re-evaluated per request, so short-lived tokens refresh. |
-| `config`   | `Record<string, string>` or a callback        | Agent configuration keys, sent as `Config-<Key>` request headers.  |
-| `headers`  | `Record<string, string>` or a callback        | Extra request headers, merged last.                                |
-| `allowedTools` | `string[]`                                | Focus the agent on a specific set of tools, sent as `forwardedProps.allowedTools`. Left out, every tool is available. |
-| `fetch`    | `typeof fetch`                                | Custom fetch (SSR, testing). Defaults to `fetch`.                  |
-| `messages` | `SeedMessage[]`                               | Seed the conversation history (`{ role: "user" \| "assistant", content: string }`). |
+| option         | type                                        | description                                                                                                           |
+|----------------|---------------------------------------------|-----------------------------------------------------------------------------------------------------------------------|
+| `endpoint`     | `string` (required)                         | The agent endpoint URL to POST to.                                                                                    |
+| `token`        | `string \| () => string \| Promise<string>` | Bearer token → `Authorization`. A callback is re-evaluated per request, so short-lived tokens refresh.                |
+| `config`       | `Record<string, string>` or a callback      | Agent configuration keys, sent as `Config-<Key>` request headers.                                                     |
+| `headers`      | `Record<string, string>` or a callback      | Extra request headers, merged last.                                                                                   |
+| `allowedTools` | `string[]`                                  | Focus the agent on a specific set of tools, sent as `forwardedProps.allowedTools`. Left out, every tool is available. |
+| `agentContext` | `Record<string, string>`                    | Define application context for the agent to know where it lives. Optional list of key-value pairs.                    |
+| `fetch`        | `typeof fetch`                              | Custom fetch (SSR, testing). Defaults to `fetch`.                                                                     |
+| `messages`     | `SeedMessage[]`                             | Seed the conversation history (`{ role: "user" \| "assistant", content: string }`).                                   |
 
 ### `conversation.send(content, { signal? })`
 
@@ -205,7 +206,7 @@ The agent runs its tools itself and reports them as they go. Any AG-UI client
 
 ## Exports
 
-`Conversation`, `StreamResult`, and the types `AgentEvent`,
+`Conversation`, `StreamResult`, and the types `AgentEvent`, `AgentContext`,
 `ConversationOptions`, `HeadersProvider`, `Message`, `Role`, `RunAgentInput`, `SeedMessage`,
 `SendOptions`, `TokenProvider`, `ToolCall`. ESM and CJS builds are shipped.
 

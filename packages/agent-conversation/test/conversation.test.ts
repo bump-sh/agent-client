@@ -303,6 +303,7 @@ describe("Conversation", () => {
       endpoint: "/agent",
       fetch: fetchImpl,
       allowedTools: ["doThis"],
+      agentContext: { "User Locale": "pt-BR", url: "http://localhost" },
     })
 
     await agent.send("first")
@@ -314,7 +315,10 @@ describe("Conversation", () => {
       runId: expect.any(String),
       messages: [{ id: expect.any(String), role: "user", content: "first" }],
       tools: [],
-      context: [],
+      context: [
+        { description: "User Locale", value: "pt-BR" },
+        { description: "url", value: "http://localhost" },
+      ],
       forwardedProps: { allowedTools: ["doThis"] },
     })
     expect(second.threadId).toBe(first.threadId)

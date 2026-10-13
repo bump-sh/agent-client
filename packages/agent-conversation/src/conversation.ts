@@ -1,10 +1,12 @@
 import { type WireEvent, parseSse } from "./sse.js"
 import type {
+  AgentContext,
   AgentEvent,
   ConversationOptions,
   HeadersProvider,
   Message,
   RunAgentInput,
+  RunContext,
   SendOptions,
   TokenProvider,
   ToolCall,
@@ -85,6 +87,7 @@ export class Conversation {
   #config: HeadersProvider
   #headers: HeadersProvider
   #allowedTools?: string[]
+  #agentContext?: AgentContext
   #fetch: typeof fetch
   #threadId = uuid()
   #messages: Message[]
@@ -102,6 +105,7 @@ export class Conversation {
     this.#config = options.config ?? {}
     this.#headers = options.headers ?? {}
     this.#allowedTools = options.allowedTools
+    this.#agentContext = options.agentContext
     // Bound once: the native fetch refuses any receiver but the global.
     this.#fetch = (options.fetch ?? globalThis.fetch).bind(globalThis)
     this.#messages = (options.messages ?? []).map((message) => ({
@@ -282,9 +286,15 @@ export class Conversation {
       runId: uuid(),
       messages: this.#messages,
       tools: [],
-      context: [],
+      context: this.#context(),
       forwardedProps: { allowedTools: this.#allowedTools },
     }
+  }
+
+  #context(): RunContext[] {
+    return Object.entries(this.#agentContext || {}).map(([key, value]) => {
+      return { description: key, value: value }
+    })
   }
 
   async #requestHeaders(): Promise<Record<string, string>> {

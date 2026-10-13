@@ -163,6 +163,29 @@ describe("Widget", () => {
     chat.destroy()
   })
 
+  it("forwards an agent context object to built-in conversation as a run property", async () => {
+    const fetchMock = vi.fn(
+      async () => new Response('data: {"type":"RUN_FINISHED"}\n\n'),
+    )
+    vi.stubGlobal("fetch", fetchMock)
+
+    const chat = new Widget({
+      endpoint: "/chat",
+      agentContext: { yo: "Yo", locale: "en-gb" },
+    })
+    for await (const _event of chat.conversation.send("hi")) {
+      // drain the stream so the request actually fires
+    }
+
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body).context).toEqual([
+      { description: "yo", value: "Yo" },
+      { description: "locale", value: "en-gb" },
+    ])
+
+    vi.unstubAllGlobals()
+    chat.destroy()
+  })
+
   it("leaves every tool available when none is listed", async () => {
     const fetchMock = vi.fn(
       async () => new Response('data: {"type":"RUN_FINISHED"}\n\n'),
