@@ -1,6 +1,6 @@
 {
   "name": "@bump-sh/agent-widget",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "Embeddable, themeable chat widget for Bump.sh agents — a Web Component you drop in with 3 lines.",
   "type": "module",
   "license": "MIT",
@@ -40,6 +40,6 @@
   },
   "keywords": ["bump.sh", "agent", "chat", "widget", "web-component", "ui"],
   "dependencies": {
-    "@bump-sh/agent-conversation": "^0.3.0"
+    "@bump-sh/agent-conversation": "^0.4.0"
   }
 }
