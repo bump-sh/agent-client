@@ -1,6 +1,6 @@
 {
   "name": "@bump-sh/agent-conversation",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Tiny, dependency-free client for streaming conversations with a Bump.sh agent API endpoint.",
   "type": "module",
   "license": "MIT",
