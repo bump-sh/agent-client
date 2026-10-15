@@ -1,20 +1,13 @@
 import type {
   AgentContext,
   AgentEvent,
+  Conversation,
   FrontendTool,
   HeadersProvider,
   TokenProvider,
 } from "@bump-sh/agent-conversation"
 
 export type Mode = "modal" | "sidebar" | "inline"
-
-/** The minimal shape the widget needs from a conversation. `Conversation` satisfies it. */
-export interface ConversationLike {
-  send(content: string): AsyncIterable<AgentEvent>
-  /** Needed for the widget's frontend tools only. */
-  addFrontendTool?(tool: FrontendTool): void
-  removeFrontendTool?(name: string): void
-}
 
 /** Theme tokens. Each maps to a `--agent-*` CSS custom property on the host. */
 export interface Theme {
@@ -51,7 +44,7 @@ export interface WidgetOptions {
   /** Endpoint to POST the conversation to. Builds a Conversation when `conversation` is not given. */
   endpoint?: string
   /** Bring your own conversation instead of building one from `endpoint`. */
-  conversation?: ConversationLike
+  conversation?: Conversation
   /**
    * Bearer token for the built-in Conversation, sent as `Authorization`. String, or a
    * callback re-evaluated per request so short-lived tokens refresh. This is the

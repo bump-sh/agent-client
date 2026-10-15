@@ -8,7 +8,7 @@ import type {
 import { Controller } from "./controller.js"
 import { renderMarkdown as defaultMarkdown } from "./markdown.js"
 import { css } from "./styles.js"
-import type { ConversationLike, Labels, Mode, Theme, WidgetOptions } from "./types.js"
+import type { Labels, Mode, Theme, WidgetOptions } from "./types.js"
 
 const THEME_VARS: Record<keyof Theme, string> = {
   accent: "--agent-accent",
@@ -44,19 +44,6 @@ const iconHtml = (value: string | undefined, fallback: string): string => {
   return value
 }
 
-type FrontendToolsTaker = Required<
-  Pick<ConversationLike, "addFrontendTool" | "removeFrontendTool">
->
-
-/** The provided conversation, refusing one that does not take frontend tools. */
-function takingFrontendTools(conversation: ConversationLike): FrontendToolsTaker {
-  if (!conversation.addFrontendTool || !conversation.removeFrontendTool)
-    throw new Error(
-      "agent-widget: the provided conversation does not take frontend tools.",
-    )
-  return conversation as FrontendToolsTaker
-}
-
 let sheet: CSSStyleSheet | undefined
 const supportsAdopted = (): boolean =>
   typeof CSSStyleSheet !== "undefined" &&
@@ -88,7 +75,6 @@ export class AgentWidget extends HTMLElement {
     "placeholder",
   ]
 
-  #providedConversation?: ConversationLike
   #conversationInstance?: Conversation
   #endpoint?: string
   #token?: TokenProvider
@@ -125,13 +111,14 @@ export class AgentWidget extends HTMLElement {
 
   /** Apply options from the `Widget` façade. Call before the element is attached. */
   configure(options: WidgetOptions): this {
-    if (options.conversation) this.#providedConversation = options.conversation
+    if (options.conversation) this.#conversationInstance = options.conversation
     if (options.endpoint) this.setAttribute("endpoint", options.endpoint)
     if (options.token != null) this.#token = options.token
     if (options.config) this.#config = options.config
     if (options.headers) this.#headers = options.headers
     if (options.allowedTools) this.#allowedTools = options.allowedTools
-    for (const tool of options.frontendTools ?? []) this.addFrontendTool(tool)
+    for (const tool of options.frontendTools ?? [])
+      this.#frontendTools.set(tool.name, tool)
     if (options.agentContext) this.#agentContext = options.agentContext
     this.setAttribute("mode", options.mode ?? this.#mode)
     if (options.launcher === false) this.#showLauncher = false
@@ -158,11 +145,7 @@ export class AgentWidget extends HTMLElement {
   }
 
   /** The conversation in use — provided, or built lazily from `endpoint`. */
-  get conversation(): ConversationLike {
-    return this.#providedConversation ?? this.#builtConversation()
-  }
-
-  #builtConversation(): Conversation {
+  get conversation(): Conversation {
     if (this.#conversationInstance) return this.#conversationInstance
     if (!this.#endpoint)
       throw new Error("agent-widget: set `endpoint` or provide a `conversation`.")
@@ -181,24 +164,16 @@ export class AgentWidget extends HTMLElement {
 
   /** Let the agent call a tool of the page. See the README's "Frontend tools". */
   addFrontendTool(tool: FrontendTool): void {
-    if (this.#providedConversation) {
-      takingFrontendTools(this.#providedConversation).addFrontendTool(tool)
-      return
-    }
     if (this.#frontendTools.has(tool.name))
       throw new Error(`Frontend tool "${tool.name}" is declared twice`)
-    if (this.#endpoint) this.#builtConversation().addFrontendTool(tool)
+    this.conversation?.addFrontendTool(tool)
     this.#frontendTools.set(tool.name, tool)
   }
 
   /** Stop the agent calling a tool of the page. */
   removeFrontendTool(name: string): void {
-    if (this.#providedConversation) {
-      takingFrontendTools(this.#providedConversation).removeFrontendTool(name)
-      return
-    }
     this.#frontendTools.delete(name)
-    this.#conversationInstance?.removeFrontendTool(name)
+    this.conversation?.removeFrontendTool(name)
   }
 
   open(): void {
