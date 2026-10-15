@@ -134,9 +134,7 @@ describe("Widget", () => {
     vi.stubGlobal("fetch", fetchMock)
 
     const chat = new Widget({ endpoint: "/chat", token: "s3cret" })
-    for await (const _event of chat.conversation.send("hi")) {
-      // drain the stream so the request actually fires
-    }
+    await chat.conversation.send("hi")
 
     expect(fetchMock.mock.calls[0][1].headers.Authorization).toBe("Bearer s3cret")
 
@@ -151,9 +149,7 @@ describe("Widget", () => {
     vi.stubGlobal("fetch", fetchMock)
 
     const chat = new Widget({ endpoint: "/chat", allowedTools: ["doThis"] })
-    for await (const _event of chat.conversation.send("hi")) {
-      // drain the stream so the request actually fires
-    }
+    await chat.conversation.send("hi")
 
     expect(JSON.parse(fetchMock.mock.calls[0][1].body).forwardedProps).toEqual({
       allowedTools: ["doThis"],
@@ -173,9 +169,7 @@ describe("Widget", () => {
       endpoint: "/chat",
       agentContext: { yo: "Yo", locale: "en-gb" },
     })
-    for await (const _event of chat.conversation.send("hi")) {
-      // drain the stream so the request actually fires
-    }
+    await chat.conversation.send("hi")
 
     expect(JSON.parse(fetchMock.mock.calls[0][1].body).context).toEqual([
       { description: "yo", value: "Yo" },
@@ -215,6 +209,37 @@ describe("Widget", () => {
     chat.destroy()
   })
 
+  it("forwards an agent context object to built-in conversation also when configuring the widget with initial frontend tools", async () => {
+    const fetchMock = vi.fn(
+      async () => new Response('data: {"type":"RUN_FINISHED"}\n\n'),
+    )
+    vi.stubGlobal("fetch", fetchMock)
+    const getSelection = {
+      name: "get_selection",
+      description: "Rows",
+      execute: () => [],
+    }
+
+    const chat = new Widget({
+      endpoint: "/chat",
+      agentContext: { yo: "Yo", locale: "en-gb" },
+      frontendTools: [getSelection],
+    })
+    await chat.conversation.send("hi")
+
+    const { context: sentContext, tools: sentTools } = JSON.parse(
+      fetchMock.mock.calls[0][1].body,
+    )
+    expect(sentContext).toEqual([
+      { description: "yo", value: "Yo" },
+      { description: "locale", value: "en-gb" },
+    ])
+    expect(sentTools.map((tool) => tool.name)).toEqual(["get_selection"])
+
+    vi.unstubAllGlobals()
+    chat.destroy()
+  })
+
   it("keeps the frontend tools when the endpoint changes", async () => {
     const fetchMock = vi.fn(
       async () => new Response('data: {"type":"RUN_FINISHED"}\n\n'),
@@ -232,22 +257,12 @@ describe("Widget", () => {
     chat.destroy()
   })
 
-  it("refuses, on every use, frontend tools added before the endpoint and invalid", () => {
+  it("refuses frontend tools added before the endpoint", () => {
     const tool = { name: "get selection", description: "Rows", execute: () => [] }
     const element = document.createElement("agent-widget") as AgentWidget
-    element.addFrontendTool(tool)
-    element.setAttribute("endpoint", "/chat")
 
-    expect(() => element.conversation).toThrow(/Frontend tool "get selection"/)
-    expect(() => element.conversation).toThrow(/Frontend tool "get selection"/)
-  })
-
-  it("refuses frontend tools for a provided conversation that does not take them", () => {
-    const conversation = { send: async function* () {} }
-    const tool = { name: "get_selection", description: "Rows", execute: () => [] }
-
-    expect(() => new Widget({ conversation, frontendTools: [tool] })).toThrow(
-      /does not take frontend tools/,
+    expect(() => element.addFrontendTool(tool)).toThrow(
+      /agent-widget: set `endpoint` or provide a `conversation`/,
     )
   })
 
@@ -258,9 +273,7 @@ describe("Widget", () => {
     vi.stubGlobal("fetch", fetchMock)
 
     const chat = new Widget({ endpoint: "/chat" })
-    for await (const _event of chat.conversation.send("hi")) {
-      // drain the stream so the request actually fires
-    }
+    await chat.conversation.send("hi")
 
     expect(JSON.parse(fetchMock.mock.calls[0][1].body).forwardedProps).toEqual({})
 

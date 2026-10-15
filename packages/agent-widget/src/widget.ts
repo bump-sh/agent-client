@@ -1,6 +1,6 @@
-import type { FrontendTool } from "@bump-sh/agent-conversation"
+import type { Conversation, FrontendTool } from "@bump-sh/agent-conversation"
 import { type AgentWidget, defineAgentWidget } from "./element.js"
-import type { ConversationLike, WidgetOptions } from "./types.js"
+import type { WidgetOptions } from "./types.js"
 
 function resolveTarget(options: WidgetOptions): HTMLElement {
   // Modal/sidebar float over the page → always attach to <body>.
@@ -38,7 +38,7 @@ export class Widget {
   get element(): AgentWidget {
     return this.#element
   }
-  get conversation(): ConversationLike {
+  get conversation(): Conversation {
     return this.#element.conversation
   }
 

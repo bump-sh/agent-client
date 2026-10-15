@@ -4,7 +4,6 @@ export { Widget } from "./widget.js"
 export { AgentWidget, defineAgentWidget } from "./element.js"
 export { renderMarkdown } from "./markdown.js"
 export type {
-  ConversationLike,
   WidgetOptions,
   Labels,
   Mode,
