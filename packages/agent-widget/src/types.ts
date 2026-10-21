@@ -43,6 +43,8 @@ export interface Labels {
   launch?: string
   /** Date divider shown at the top of a conversation. */
   today?: string
+  /** Copy button of code blocks. */
+  copy?: string
 }
 
 export interface WidgetOptions {

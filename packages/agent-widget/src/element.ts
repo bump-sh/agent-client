@@ -261,6 +261,7 @@ export class AgentWidget extends HTMLElement {
         render: this.#render,
         avatar: this.#avatarHtml(),
         todayLabel: this.#labels.today ?? "Today",
+        copyLabel: this.#labels.copy ?? "Copy code",
       },
     )
     this.#built = true

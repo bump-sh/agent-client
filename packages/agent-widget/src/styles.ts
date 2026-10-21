@@ -140,9 +140,10 @@ dialog.panel::backdrop { background: transparent; }
 .body a { color: var(--agent-accent); text-decoration: underline; text-underline-offset: 2px; }
 .body code { background: var(--agent-code-bg); padding: .1em .4em; border-radius: 5px; font-size: .9em; font-family: var(--agent-mono); }
 
-/* ---- code blocks: dark surface, language label ---- */
+/* ---- code blocks: dark surface, language label, copy button ---- */
+.body .code-block { position: relative; margin: .7em 0; }
 .body pre {
-  margin: .7em 0; padding: 14px 16px; border-radius: 12px; overflow-x: auto;
+  margin: 0; padding: 14px 16px; border-radius: 12px; overflow-x: auto;
   background: var(--agent-code-block-bg); color: var(--agent-code-block-text);
   font-family: var(--agent-mono); font-size: .84em; line-height: 1.6;
 }
@@ -151,6 +152,20 @@ dialog.panel::backdrop { background: transparent; }
   color: color-mix(in srgb, var(--agent-code-block-text) 55%, transparent); font-size: .85em; text-transform: lowercase;
 }
 .body pre code { background: none; padding: 0; font-size: inherit; }
+.body .copy {
+  position: absolute; top: 8px; right: 8px; width: 30px; height: 30px;
+  display: flex; align-items: center; justify-content: center;
+  border: 0; border-radius: 8px; cursor: pointer;
+  background: color-mix(in srgb, var(--agent-code-block-text) 10%, transparent);
+  color: var(--agent-code-block-text);
+  opacity: 0; transition: opacity .15s, background .15s;
+}
+.body .copy svg { width: 15px; height: 15px; }
+.body .copy:hover { background: color-mix(in srgb, var(--agent-code-block-text) 20%, transparent); }
+.body .code-block:hover .copy, .body .copy:focus-visible, .body .copy[data-state] { opacity: 1; }
+@media (hover: none) { .body .copy { opacity: 1; } }
+.body .copy .copied-icon, .body .copy[data-state="done"] .copy-icon { display: none; }
+.body .copy[data-state="done"] .copied-icon { display: block; }
 .body table { border-collapse: collapse; margin: .6em 0; width: 100%; font-size: .94em; }
 .body th, .body td { border: 1px solid var(--agent-border); padding: 6px 10px; text-align: left; }
 .body th { background: var(--agent-code-bg); }

@@ -274,6 +274,7 @@ export const SECTIONS: Section[] = [
       { key: "labels.close", label: "Close", input: "text", default: "Close" },
       { key: "labels.launch", label: "Launch", input: "text", default: "Open chat" },
       { key: "labels.today", label: "Date divider", input: "text", default: "Today" },
+      { key: "labels.copy", label: "Copy code", input: "text", default: "Copy code" },
     ],
   },
 ]

@@ -5,7 +5,21 @@ const escapeHtml = (s: string): string =>
   s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
 
 const SPINNER = '<span class="loader"><span></span><span></span><span></span></span>'
+const COPY_ICON = `<svg class="copy-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>`
+const COPIED_ICON = `<svg class="copied-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>`
+const COPIED_FEEDBACK_MS = 2000
 const TOOL_ICON = `<svg class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18v3h3l6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.1-.4-.4-2.1 2.5-2.5z"/></svg>`
+
+function iconButton(name: string, label: string, icon: string): HTMLButtonElement {
+  const button = document.createElement("button")
+  button.type = "button"
+  button.className = name
+  button.setAttribute("part", name)
+  button.setAttribute("aria-label", label)
+  button.title = label
+  button.innerHTML = icon
+  return button
+}
 
 function actionButton(kind: string, label: string): HTMLButtonElement {
   const button = document.createElement("button")
@@ -49,6 +63,7 @@ export interface ControllerOptions {
   render: (text: string) => string
   avatar: string
   todayLabel: string
+  copyLabel: string
 }
 
 /** Drives one thread element: appends turns and streams assistant replies into it. */
@@ -69,7 +84,7 @@ export class Controller {
 
   /** Add an assistant turn without streaming (used for the greeting). */
   greet(text: string): void {
-    this.#assistantTurn().body.innerHTML = this.#options.render(text)
+    this.#renderInto(this.#assistantTurn().body, text)
   }
 
   /** Send a user turn and stream the assistant reply into a new turn. */
@@ -113,9 +128,38 @@ export class Controller {
   }
 
   #paint({ body, aside, text, liveTools, done }: Reply): void {
-    body.innerHTML = this.#options.render(text)
+    this.#renderInto(body, text)
     aside.innerHTML = done ? "" : this.#liveStatus(liveTools)
     this.#scroll()
+  }
+
+  #renderInto(body: HTMLElement, text: string): void {
+    body.innerHTML = this.#options.render(text)
+    for (const pre of body.querySelectorAll("pre")) this.#wrapCodeBlock(pre)
+  }
+
+  /** Wraps a code block with its copy button, kept in place when the code scrolls. */
+  #wrapCodeBlock(pre: HTMLPreElement): void {
+    const block = document.createElement("div")
+    block.className = "code-block"
+    pre.replaceWith(block)
+    block.append(pre, this.#copyButton(pre))
+  }
+
+  /** Copies the code on click; its copied state shows a moment after the last click. */
+  #copyButton(pre: HTMLPreElement): HTMLButtonElement {
+    const code = pre.textContent ?? ""
+    const button = iconButton("copy", this.#options.copyLabel, COPY_ICON + COPIED_ICON)
+    let resetState: ReturnType<typeof setTimeout> | undefined
+    button.addEventListener("click", async () => {
+      await execute(button, () => navigator.clipboard.writeText(code))
+      clearTimeout(resetState)
+      resetState = setTimeout(
+        () => button.removeAttribute("data-state"),
+        COPIED_FEEDBACK_MS,
+      )
+    })
+    return button
   }
 
   #finish(reply: Reply): void {
