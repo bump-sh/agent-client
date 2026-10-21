@@ -77,4 +77,39 @@ describe("renderMarkdown", () => {
     expect(html).not.toContain('"onmouseover=')
     expect(html).toContain("&quot;")
   })
+
+  it("links bare URLs, leaving trailing punctuation out", () => {
+    expect(renderMarkdown("See https://bump.sh/docs.")).toBe(
+      '<p>See <a href="https://bump.sh/docs" target="_blank" rel="noopener">https://bump.sh/docs</a>.</p>',
+    )
+  })
+
+  it("links a URL between angle brackets without the brackets", () => {
+    expect(renderMarkdown("<https://bump.sh>")).toContain(
+      '&lt;<a href="https://bump.sh" target="_blank" rel="noopener">https://bump.sh</a>&gt;',
+    )
+  })
+
+  it("does not link a markdown link's text twice", () => {
+    const html = renderMarkdown("[https://bump.sh](https://bump.sh)")
+    expect(html.match(/<a /g)).toHaveLength(1)
+  })
+
+  it("links a bold URL without swallowing the closing tag", () => {
+    expect(renderMarkdown("**https://bump.sh**")).toContain(
+      '<strong><a href="https://bump.sh" target="_blank" rel="noopener">https://bump.sh</a></strong>',
+    )
+  })
+
+  it("renders bold around inline code", () => {
+    expect(renderMarkdown("**`GET /list`**")).toBe(
+      "<p><strong><code>GET /list</code></strong></p>",
+    )
+  })
+
+  it("leaves URLs and formatting inside inline code untouched", () => {
+    expect(renderMarkdown("`curl https://bump.sh **x**`")).toBe(
+      "<p><code>curl https://bump.sh **x**</code></p>",
+    )
+  })
 })

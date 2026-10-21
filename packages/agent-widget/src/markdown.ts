@@ -11,17 +11,43 @@ const escapeHtml = (s: string): string =>
 const SAFE_URL = /^(https?:|mailto:|#|\/|\.)/i
 const escapeAttr = (url: string): string => url.replace(/"/g, "&quot;")
 
-const link = (_match: string, text: string, url: string): string =>
-  SAFE_URL.test(url)
-    ? `<a href="${escapeAttr(url)}" target="_blank" rel="noopener">${text}</a>`
-    : text
+const anchor = (url: string, text: string): string =>
+  `<a href="${escapeAttr(url)}" target="_blank" rel="noopener">${text}</a>`
 
-const inline = (s: string): string =>
-  escapeHtml(s)
-    .replace(/`([^`]+)`/g, "<code>$1</code>")
+// A markdown link, or a bare URL — matched in one pass so a link's own text is
+// never linked twice. A bare URL stops before an escaped `<`/`>` (the
+// `<https://…>` autolink form), and gives back its trailing punctuation.
+const LINK = /\[([^\]]+)\]\(([^)\s]+)\)|https?:\/\/(?:(?!&[lg]t;)[^\s"<])+/g
+const TRAILING_PUNCTUATION = /[.,:;!?)\]']+$/
+
+const link = (match: string, text?: string, url?: string): string => {
+  if (text !== undefined && url !== undefined)
+    return SAFE_URL.test(url) ? anchor(url, text) : text
+  const trailing = match.match(TRAILING_PUNCTUATION)?.[0] ?? ""
+  const bare = match.slice(0, match.length - trailing.length)
+  return anchor(bare, bare) + trailing
+}
+
+/**
+ * Inline code spans are set aside behind a placeholder while formatting and
+ * links apply, so their content stays verbatim but bold can still wrap them.
+ * The placeholder is U+E000, a private-use character no text contains.
+ */
+const inline = (s: string): string => {
+  const spans: string[] = []
+  return escapeHtml(s)
+    .replace(
+      /`([^`]+)`/g,
+      (_match, code: string) => `\uE000${spans.push(code) - 1}\uE000`,
+    )
     .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
     .replace(/\*([^*]+)\*/g, "<em>$1</em>")
-    .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, link)
+    .replace(LINK, link)
+    .replace(
+      /\uE000(\d+)\uE000/g,
+      (_match, index: string) => `<code>${spans[Number(index)]}</code>`,
+    )
+}
 
 const QUOTE = /^\s*>\s?/
 
