@@ -8,6 +8,18 @@ describe("renderMarkdown", () => {
     expect(html).toContain("&lt;script&gt;")
   })
 
+  it("escapes HTML in every kind of block", () => {
+    const blocks = [
+      "# <b>",
+      "- <b>",
+      "1. <b>",
+      "> <b>",
+      "| <b> |\n| - |\n| <b> |",
+      "```\n<b>\n```",
+    ]
+    for (const block of blocks) expect(renderMarkdown(block)).not.toContain("<b>")
+  })
+
   it("renders bold and inline code", () => {
     expect(renderMarkdown("**hi** and `code`")).toContain("<strong>hi</strong>")
     expect(renderMarkdown("**hi** and `code`")).toContain("<code>code</code>")
@@ -20,6 +32,18 @@ describe("renderMarkdown", () => {
   it("renders fenced code blocks without interpreting their content", () => {
     const html = renderMarkdown("```\n<b>x</b>\n```")
     expect(html).toBe("<pre><code>&lt;b&gt;x&lt;/b&gt;</code></pre>")
+  })
+
+  it("renders blockquotes, one line per quoted line", () => {
+    expect(renderMarkdown("> Ordered from\n> the most recent.")).toBe(
+      "<blockquote>Ordered from<br>the most recent.</blockquote>",
+    )
+  })
+
+  it("ends a paragraph where a blockquote starts", () => {
+    expect(renderMarkdown("Note:\n> **careful**")).toBe(
+      "<p>Note:</p><blockquote><strong>careful</strong></blockquote>",
+    )
   })
 
   it("renders tables", () => {

@@ -1,9 +1,13 @@
-// A tiny, safe markdown renderer: it escapes all HTML first, then re-introduces
-// only a known subset of tags. No dependency, no raw HTML passthrough.
+// A tiny, safe markdown renderer: it reads the block structure from the raw
+// source, escapes every piece of text it emits, and only re-introduces a known
+// subset of tags. No dependency, no raw HTML passthrough.
+
+const escapeHtml = (s: string): string =>
+  s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
 
 // Link URLs must start with a known-safe scheme; anything else (javascript:,
 // data:, …) is dropped to plain text. Note: `& < >` are already entity-escaped
-// by renderMarkdown before inline() runs, so only `"` can still break the href.
+// by inline() before links are matched, so only `"` can still break the href.
 const SAFE_URL = /^(https?:|mailto:|#|\/|\.)/i
 const escapeAttr = (url: string): string => url.replace(/"/g, "&quot;")
 
@@ -13,22 +17,20 @@ const link = (_match: string, text: string, url: string): string =>
     : text
 
 const inline = (s: string): string =>
-  s
+  escapeHtml(s)
     .replace(/`([^`]+)`/g, "<code>$1</code>")
     .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
     .replace(/\*([^*]+)\*/g, "<em>$1</em>")
     .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, link)
+
+const QUOTE = /^\s*>\s?/
 
 const isSpecial = (l: string): boolean =>
   /^```|^#{1,3}\s|^\s*[-*]\s+|^\s*\d+\.\s+|^\s*>|^\s*(-{3,}|\*{3,}|_{3,})\s*$/.test(l)
 
 /** Render a markdown string to a safe HTML string. */
 export function renderMarkdown(src: string): string {
-  const lines = src
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .split("\n")
+  const lines = src.split("\n")
 
   let html = ""
   let i = 0
@@ -41,7 +43,7 @@ export function renderMarkdown(src: string): string {
       while (i < lines.length && !/^```/.test(lines[i] as string))
         code += `${lines[i++]}\n`
       i++
-      html += `<pre><code>${code.replace(/\n$/, "")}</code></pre>`
+      html += `<pre><code>${escapeHtml(code.replace(/\n$/, ""))}</code></pre>`
       continue
     }
 
@@ -81,10 +83,10 @@ export function renderMarkdown(src: string): string {
       continue
     }
 
-    if (/^\s*>\s?/.test(line)) {
+    if (QUOTE.test(line)) {
       const items: string[] = []
-      while (i < lines.length && /^\s*>\s?/.test(lines[i] as string))
-        items.push((lines[i++] as string).replace(/^\s*>\s?/, ""))
+      while (i < lines.length && QUOTE.test(lines[i] as string))
+        items.push((lines[i++] as string).replace(QUOTE, ""))
       html += `<blockquote>${items.map(inline).join("<br>")}</blockquote>`
       continue
     }
