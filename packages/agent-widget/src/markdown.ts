@@ -49,6 +49,11 @@ const inline = (s: string): string => {
     )
 }
 
+const codeBlock = (language: string, code: string): string => {
+  const lang = language ? ` data-lang="${escapeAttr(escapeHtml(language))}"` : ""
+  return `<pre${lang}><code>${escapeHtml(code)}</code></pre>`
+}
+
 const QUOTE = /^\s*>\s?/
 
 const isSpecial = (l: string): boolean =>
@@ -64,12 +69,13 @@ export function renderMarkdown(src: string): string {
     const line = lines[i] as string
 
     if (/^```/.test(line)) {
+      const language = line.slice(3).trim()
       let code = ""
       i++
       while (i < lines.length && !/^```/.test(lines[i] as string))
         code += `${lines[i++]}\n`
       i++
-      html += `<pre><code>${escapeHtml(code.replace(/\n$/, ""))}</code></pre>`
+      html += codeBlock(language, code.replace(/\n$/, ""))
       continue
     }
 

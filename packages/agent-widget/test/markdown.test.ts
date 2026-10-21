@@ -16,6 +16,7 @@ describe("renderMarkdown", () => {
       "> <b>",
       "| <b> |\n| - |\n| <b> |",
       "```\n<b>\n```",
+      '```"><b>\nx\n```',
     ]
     for (const block of blocks) expect(renderMarkdown(block)).not.toContain("<b>")
   })
@@ -110,6 +111,12 @@ describe("renderMarkdown", () => {
   it("leaves URLs and formatting inside inline code untouched", () => {
     expect(renderMarkdown("`curl https://bump.sh **x**`")).toBe(
       "<p><code>curl https://bump.sh **x**</code></p>",
+    )
+  })
+
+  it("tags code blocks with their language", () => {
+    expect(renderMarkdown("```bash\nls\n```")).toBe(
+      '<pre data-lang="bash"><code>ls</code></pre>',
     )
   })
 })

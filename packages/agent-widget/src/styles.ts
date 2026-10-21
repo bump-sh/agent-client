@@ -8,6 +8,8 @@ export const css = `
   --agent-user-bg: #f4f4f5;
   --agent-border: #ececee;
   --agent-code-bg: #f4f4f6;
+  --agent-code-block-bg: #16171d;
+  --agent-code-block-text: #e4e4e7;
   --agent-avatar-bg: var(--agent-user-bg);
   --agent-button-bg: var(--agent-accent);
   --agent-button-fg: #fff;
@@ -137,8 +139,18 @@ dialog.panel::backdrop { background: transparent; }
 .body li { margin: .2em 0; }
 .body a { color: var(--agent-accent); text-decoration: underline; text-underline-offset: 2px; }
 .body code { background: var(--agent-code-bg); padding: .1em .4em; border-radius: 5px; font-size: .9em; font-family: var(--agent-mono); }
-.body pre { background: var(--agent-code-bg); padding: 12px 14px; border-radius: 12px; overflow-x: auto; font-family: var(--agent-mono); }
-.body pre code { background: none; padding: 0; }
+
+/* ---- code blocks: dark surface, language label ---- */
+.body pre {
+  margin: .7em 0; padding: 14px 16px; border-radius: 12px; overflow-x: auto;
+  background: var(--agent-code-block-bg); color: var(--agent-code-block-text);
+  font-family: var(--agent-mono); font-size: .84em; line-height: 1.6;
+}
+.body pre[data-lang]::before {
+  content: attr(data-lang); display: block; margin-bottom: .6em;
+  color: color-mix(in srgb, var(--agent-code-block-text) 55%, transparent); font-size: .85em; text-transform: lowercase;
+}
+.body pre code { background: none; padding: 0; font-size: inherit; }
 .body table { border-collapse: collapse; margin: .6em 0; width: 100%; font-size: .94em; }
 .body th, .body td { border: 1px solid var(--agent-border); padding: 6px 10px; text-align: left; }
 .body th { background: var(--agent-code-bg); }
