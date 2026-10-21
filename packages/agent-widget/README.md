@@ -221,8 +221,9 @@ A frontend tool executes either:
 The built-in renderer is intentionally tiny and dependency-free: it escapes all
 HTML first, then re-introduces a fixed, safe subset — bold, italic, inline code,
 code blocks, headings, lists, blockquotes, tables, horizontal rules, and links
-restricted to `http(s)`/`mailto`/relative schemes. It keeps the bundle small —
-no `javascript:`/`data:` links, no raw HTML passthrough.
+restricted to `http(s)`/`mailto`/relative schemes. Bare `http(s)` URLs become
+links too. It keeps the bundle small — no `javascript:`/`data:` links, no raw
+HTML passthrough.
 
 Need full CommonMark/GFM? Swap in a specialized renderer via `renderMarkdown`.
 Always pair the parser with a sanitizer — do not trust model output:
