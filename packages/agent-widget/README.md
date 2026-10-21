@@ -75,7 +75,7 @@ const widget = new Widget({
   launcherIcon: "✨",               // launcher button icon: image URL or inline emoji/HTML
                                     // (defaults to an AI sparkle)
   disclaimer: "AI can make mistakes…", // footer under the composer ("" to hide)
-  labels: { send: "Send", close: "Close", launch: "Open chat", today: "Today" },
+  labels: { send: "Send", close: "Close", launch: "Open chat", today: "Today", copy: "Copy code" },
                                     // a11y labels + the date divider — override to localize
   renderMarkdown: (text) => "…",    // replace the built-in safe renderer
 })
@@ -226,6 +226,7 @@ links too. It keeps the bundle small — no `javascript:`/`data:` links, no raw
 HTML passthrough.
 
 Code blocks render on a dark surface with their language label.
+Every code block — whatever the renderer — gets a copy button.
 
 Need full CommonMark/GFM? Swap in a specialized renderer via `renderMarkdown`.
 Always pair the parser with a sanitizer — do not trust model output:
@@ -309,7 +310,7 @@ agent-widget::part(message-user) { background: #eef; }
 
 Parts: `launcher`, `panel`, `header`, `title`, `subtitle`, `close`, `thread`,
 `message`, `message-user`, `message-assistant`, `avatar`, `composer`,
-`input`, `send`, `status`, `action`, `action-confirmation`,
+`input`, `send`, `status`, `action`, `action-confirmation`, `copy`,
 `disclaimer`.
 
 Action buttons (`action`) use the `--agent-button-*` tokens.
