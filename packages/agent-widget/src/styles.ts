@@ -131,14 +131,18 @@ dialog.panel::backdrop { background: transparent; }
 .avatar img { width: 100%; height: 100%; object-fit: cover; }
 .content { flex: 1; min-width: 0; }
 
+.body { font-size: .9375em; line-height: 1.6; }
 .body > :first-child { margin-top: 0; }
 .body > :last-child { margin-bottom: 0; }
-.body p { margin: .55em 0; }
-.body h3, .body h4, .body h5 { margin: 1em 0 .4em; line-height: 1.3; }
-.body ul, .body ol { margin: .5em 0; padding-left: 1.4em; }
-.body li { margin: .2em 0; }
-.body a { color: var(--agent-accent); text-decoration: underline; text-underline-offset: 2px; }
-.body code { background: var(--agent-code-bg); padding: .1em .4em; border-radius: 5px; font-size: .9em; font-family: var(--agent-mono); }
+.body p { margin: .5em 0; }
+.body strong { font-weight: 600; }
+.body h3, .body h4, .body h5 { margin: 1em 0 .35em; font-size: 1em; font-weight: 600; line-height: 1.4; }
+.body ul, .body ol { margin: .45em 0; padding-left: 1.3em; }
+.body li { margin: .15em 0; }
+.body li::marker { color: var(--agent-muted); }
+.body a { color: var(--agent-accent); text-decoration: underline; text-decoration-color: color-mix(in srgb, currentColor 35%, transparent); text-underline-offset: 2px; overflow-wrap: anywhere; }
+.body a:hover { text-decoration-color: currentColor; }
+.body code { background: var(--agent-code-bg); padding: .1em .35em; border-radius: 5px; font-size: .88em; font-family: var(--agent-mono); }
 
 /* ---- code blocks: dark surface, language label, copy button ---- */
 .body .code-block { position: relative; margin: .7em 0; }
