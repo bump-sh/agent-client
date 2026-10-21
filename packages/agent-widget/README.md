@@ -296,6 +296,13 @@ agent-widget {
 | `--agent-column`          | `760px`                | Max conversation width (inline)                                    |
 | `--agent-z`               | `2147483000`           | Stacking order                                                     |
 
+Spacing, radii, sizes and shadows are tokens too — no other pixel value in the
+stylesheet: `--agent-space-2xs` to `--agent-space-2xl`, `--agent-radius-xs`,
+`-sm`, `-md`, `-pill`, `--agent-font-size`, `--agent-control-size(-sm)`,
+`--agent-launcher-size`, `--agent-modal-width`/`-height`,
+`--agent-sidebar-min-width`, `--agent-border-width` and the
+`--agent-launcher-`/`modal-`/`sidebar-shadow`s.
+
 The `theme` option is a JS shortcut for the most common ones — `accent`,
 `buttonBg`, `buttonFg`, `bg`, `text`, `muted`, `userBg`, `inputBg`, `border`,
 `codeBg`, `codeBlockBg`, `codeBlockText`, `font`, `radius`, `width`, `z` — set the rest directly in CSS as
