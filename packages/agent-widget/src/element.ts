@@ -21,6 +21,8 @@ const THEME_VARS: Record<keyof Theme, string> = {
   inputBg: "--agent-input-bg",
   border: "--agent-border",
   codeBg: "--agent-code-bg",
+  codeBlockBg: "--agent-code-block-bg",
+  codeBlockText: "--agent-code-block-text",
   font: "--agent-font",
   radius: "--agent-radius",
   width: "--agent-width",

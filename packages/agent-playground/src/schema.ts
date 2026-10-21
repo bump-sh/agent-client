@@ -216,10 +216,24 @@ export const SECTIONS: Section[] = [
       },
       {
         key: "theme.codeBg",
-        label: "Code background",
+        label: "Inline code background",
         input: "color",
         default: "#f4f4f6",
         cssVar: "--agent-code-bg",
+      },
+      {
+        key: "theme.codeBlockBg",
+        label: "Code block background",
+        input: "color",
+        default: "#16171d",
+        cssVar: "--agent-code-block-bg",
+      },
+      {
+        key: "theme.codeBlockText",
+        label: "Code block text",
+        input: "color",
+        default: "#e4e4e7",
+        cssVar: "--agent-code-block-text",
       },
       {
         key: "theme.font",
