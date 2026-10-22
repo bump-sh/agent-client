@@ -23,7 +23,12 @@ export interface Theme {
   /** Composer input background. */
   inputBg?: string
   border?: string
+  /** Inline code & table headers background. */
   codeBg?: string
+  /** Code block background. Dark by default. */
+  codeBlockBg?: string
+  /** Code block text color. */
+  codeBlockText?: string
   font?: string
   radius?: string
   /** Sidebar width, e.g. "22vw" or "360px". */
@@ -38,6 +43,8 @@ export interface Labels {
   launch?: string
   /** Date divider shown at the top of a conversation. */
   today?: string
+  /** Copy button of code blocks. */
+  copy?: string
 }
 
 export interface WidgetOptions {

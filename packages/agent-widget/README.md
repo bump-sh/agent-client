@@ -75,7 +75,7 @@ const widget = new Widget({
   launcherIcon: "✨",               // launcher button icon: image URL or inline emoji/HTML
                                     // (defaults to an AI sparkle)
   disclaimer: "AI can make mistakes…", // footer under the composer ("" to hide)
-  labels: { send: "Send", close: "Close", launch: "Open chat", today: "Today" },
+  labels: { send: "Send", close: "Close", launch: "Open chat", today: "Today", copy: "Copy code" },
                                     // a11y labels + the date divider — override to localize
   renderMarkdown: (text) => "…",    // replace the built-in safe renderer
 })
@@ -221,8 +221,12 @@ A frontend tool executes either:
 The built-in renderer is intentionally tiny and dependency-free: it escapes all
 HTML first, then re-introduces a fixed, safe subset — bold, italic, inline code,
 code blocks, headings, lists, blockquotes, tables, horizontal rules, and links
-restricted to `http(s)`/`mailto`/relative schemes. It keeps the bundle small —
-no `javascript:`/`data:` links, no raw HTML passthrough.
+restricted to `http(s)`/`mailto`/relative schemes. Bare `http(s)` URLs become
+links too. It keeps the bundle small — no `javascript:`/`data:` links, no raw
+HTML passthrough.
+
+Code blocks render on a dark surface with their language label.
+Every code block — whatever the renderer — gets a copy button.
 
 Need full CommonMark/GFM? Swap in a specialized renderer via `renderMarkdown`.
 Always pair the parser with a sanitizer — do not trust model output:
@@ -268,31 +272,40 @@ agent-widget {
 }
 ```
 
-| token                 | default                 | what it styles                          |
-| --------------------- | ----------------------- | --------------------------------------- |
-| `--agent-accent`      | `#0a0a0a`               | Accents: links, and buttons by default  |
-| `--agent-button-bg`   | `var(--agent-accent)`   | Launcher & send button — override to decouple them from the accent |
-| `--agent-button-fg`   | `#fff`                  | Launcher & send button icon             |
-| `--agent-bg`          | `#ffffff`               | Panel background                        |
-| `--agent-text`        | `#0d0d0d`               | Text                                    |
-| `--agent-muted`       | `#8a8a8f`               | Secondary text (subtitle, status…)      |
-| `--agent-user-bg`     | `#f4f4f5`               | User message bubble                     |
-| `--agent-input-bg`    | `#f7f7f8`               | Composer input                          |
-| `--agent-border`      | `#ececee`               | Borders                                 |
-| `--agent-code-bg`     | `#f4f4f6`               | Code blocks & table headers             |
-| `--agent-avatar-bg`   | `var(--agent-user-bg)`  | Avatar background                       |
-| `--agent-avatar-size` | `28px`                  | Avatar box                              |
-| `--agent-font`        | system sans stack       | Font family                             |
-| `--agent-mono`        | system mono stack       | Code font family                        |
-| `--agent-radius`      | `20px`                  | Corner radius (user bubble, composer, modal panel) |
-| `--agent-width`       | `26vw`                  | Sidebar width                           |
-| `--agent-gutter`      | `18px`                  | Horizontal padding                      |
-| `--agent-column`      | `760px`                 | Max conversation width (inline)         |
-| `--agent-z`           | `2147483000`            | Stacking order                          |
+| token                     | default                | what it styles                                                     |
+| ------------------------- | ---------------------- | ------------------------------------------------------------------ |
+| `--agent-accent`          | `#0a0a0a`              | Accents: links, and buttons by default                             |
+| `--agent-button-bg`       | `var(--agent-accent)`  | Launcher & send button — override to decouple them from the accent |
+| `--agent-button-fg`       | `#fff`                 | Launcher & send button icon                                        |
+| `--agent-bg`              | `#ffffff`              | Panel background                                                   |
+| `--agent-text`            | `#0d0d0d`              | Text                                                               |
+| `--agent-muted`           | `#8a8a8f`              | Secondary text (subtitle, status…)                                 |
+| `--agent-user-bg`         | `#f4f4f5`              | User message bubble                                                |
+| `--agent-input-bg`        | `#f7f7f8`              | Composer input                                                     |
+| `--agent-border`          | `#ececee`              | Borders                                                            |
+| `--agent-code-bg`         | `#f4f4f6`              | Inline code & table headers                                        |
+| `--agent-code-block-bg`   | `#16171d`              | Code blocks                                                        |
+| `--agent-code-block-text` | `#e4e4e7`              | Code block text                                                    |
+| `--agent-avatar-bg`       | `var(--agent-user-bg)` | Avatar background                                                  |
+| `--agent-avatar-size`     | `28px`                 | Avatar box                                                         |
+| `--agent-font`            | system sans stack      | Font family                                                        |
+| `--agent-mono`            | system mono stack      | Code font family                                                   |
+| `--agent-radius`          | `20px`                 | Corner radius (user bubble, composer, modal panel)                 |
+| `--agent-width`           | `26vw`                 | Sidebar width                                                      |
+| `--agent-gutter`          | `18px`                 | Horizontal padding                                                 |
+| `--agent-column`          | `760px`                | Max conversation width (inline)                                    |
+| `--agent-z`               | `2147483000`           | Stacking order                                                     |
+
+Spacing, radii, sizes and shadows are tokens too — no other pixel value in the
+stylesheet: `--agent-space-2xs` to `--agent-space-2xl`, `--agent-radius-xs`,
+`-sm`, `-md`, `-pill`, `--agent-font-size`, `--agent-control-size(-sm)`,
+`--agent-launcher-size`, `--agent-modal-width`/`-height`,
+`--agent-sidebar-min-width`, `--agent-border-width` and the
+`--agent-launcher-`/`modal-`/`sidebar-shadow`s.
 
 The `theme` option is a JS shortcut for the most common ones — `accent`,
 `buttonBg`, `buttonFg`, `bg`, `text`, `muted`, `userBg`, `inputBg`, `border`,
-`codeBg`, `font`, `radius`, `width`, `z` — set the rest directly in CSS as
+`codeBg`, `codeBlockBg`, `codeBlockText`, `font`, `radius`, `width`, `z` — set the rest directly in CSS as
 above.
 
 Style internal structure with `::part()`:
@@ -304,7 +317,7 @@ agent-widget::part(message-user) { background: #eef; }
 
 Parts: `launcher`, `panel`, `header`, `title`, `subtitle`, `close`, `thread`,
 `message`, `message-user`, `message-assistant`, `avatar`, `composer`,
-`input`, `send`, `status`, `action`, `action-confirmation`,
+`input`, `send`, `status`, `action`, `action-confirmation`, `copy`,
 `disclaimer`.
 
 Action buttons (`action`) use the `--agent-button-*` tokens.

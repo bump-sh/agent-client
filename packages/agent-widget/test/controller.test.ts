@@ -16,6 +16,7 @@ const options = {
   render: (text: string): string => text,
   avatar: "",
   todayLabel: "Today",
+  copyLabel: "Copy code",
 }
 
 describe("Controller", () => {
@@ -139,6 +140,42 @@ describe("Controller", () => {
     expect(dismissed?.disabled).toBe(true)
     expect(dismissed?.dataset.state).toBe("dismissed")
     expect(fresh?.disabled).toBe(false)
+  })
+
+  it("copies a code block's content with its copy button", async () => {
+    const thread = document.createElement("div")
+    const writeText = vi.fn(async () => {})
+    vi.stubGlobal("navigator", { clipboard: { writeText } })
+
+    new Controller(thread, () => fakeAgent([]), options).greet(
+      "<pre><code>ls -la</code></pre>",
+    )
+    const button = thread.querySelector<HTMLButtonElement>(".code-block .copy")
+    button?.click()
+
+    expect(button?.getAttribute("aria-label")).toBe("Copy code")
+    await vi.waitFor(() => expect(button?.dataset.state).toBe("done"))
+    expect(writeText).toHaveBeenCalledWith("ls -la")
+    vi.unstubAllGlobals()
+  })
+
+  it("keeps a code block's copied state for a moment after the last click", async () => {
+    vi.useFakeTimers()
+    const thread = document.createElement("div")
+    vi.stubGlobal("navigator", { clipboard: { writeText: async () => {} } })
+
+    new Controller(thread, () => fakeAgent([]), options).greet(
+      "<pre><code>ls</code></pre>",
+    )
+    const button = thread.querySelector<HTMLButtonElement>(".copy")
+    button?.click()
+    await vi.advanceTimersByTimeAsync(1500)
+    button?.click()
+    await vi.advanceTimersByTimeAsync(1000)
+
+    expect(button?.dataset.state).toBe("done")
+    vi.useRealTimers()
+    vi.unstubAllGlobals()
   })
 })
 
