@@ -14,7 +14,7 @@
     "node": ">=18"
   },
   "devDependencies": {
-    "@bump-sh/agent-widget": "^0.4.1",
+    "@bump-sh/agent-widget": "^0.4.2",
     "esbuild": "^0.28.2"
   }
 }
